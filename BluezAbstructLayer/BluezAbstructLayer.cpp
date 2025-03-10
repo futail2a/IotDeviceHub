@@ -1,17 +1,15 @@
 #include "BluezAbstructLayer.h"
-
 #include <iostream>
 #include <cstring>
 #include <algorithm>
-#include <iostream>
 #include <fstream>
 
-BluezAbstructLayer::BluezAbstructLayer(SensorDataParser *sensorDataParser)
+BluezAbstructLayer::BluezAbstructLayer(std::shared_ptr<SensorDataParser> sensorDataParser)
 {
-    m_sensorDataParser = std::move(sensorDataParser);
+    m_sensorDataParser = sensorDataParser;
     m_conn = nullptr;
     m_adapter_path = BLUEZ_PATH + "/hci0";
-    m_device_path = BLUEZ_PATH + "/hci0/dev_" + DEVICE_MAC;
+    m_device_path = BLUEZ_PATH + "/hci0/dev_" + m_sensorDataParser->get_device_mac();
     std::replace(m_device_path.begin(), m_device_path.end(), ':', '_');
 }
 
