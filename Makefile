@@ -2,7 +2,9 @@ CC  := g++
 
 CFLAGS := `pkg-config --cflags --libs dbus-1`
 TARGET := IotDeviceHub
-SRCS   :=  main.cpp BluezAbstructLayer.cpp SwtichBotApiDataParser.cpp
+INCLUDES := -I./include -I./ble -I./IotDeviceHubManager -I./mqtt
+CFLAGS += $(INCLUDES)
+SRCS   := $(shell find . -name '*.cpp')
 
 $(TARGET): $(SRCS)
 	$(CC) -o $@ $^ $(CFLAGS)
