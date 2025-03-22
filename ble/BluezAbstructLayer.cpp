@@ -4,12 +4,12 @@
 #include <algorithm>
 #include <fstream>
 
-BluezAbstructLayer::BluezAbstructLayer(std::shared_ptr<SensorDataParser> sensorDataParser)
+BluezAbstructLayer::BluezAbstructLayer(std::shared_ptr<SensorDataHandler> sensorDataHandler)
 {
-    m_sensorDataParser = sensorDataParser;
+    m_sensorDataHandler = sensorDataHandler;
     m_conn = nullptr;
     m_adapter_path = BLUEZ_PATH + "/hci0";
-    m_device_path = BLUEZ_PATH + "/hci0/dev_" + m_sensorDataParser->get_device_mac();
+    m_device_path = BLUEZ_PATH + "/hci0/dev_" + m_sensorDataHandler->get_device_mac();
     std::replace(m_device_path.begin(), m_device_path.end(), ':', '_');
 }
 
@@ -103,7 +103,7 @@ std::vector<uint8_t> BluezAbstructLayer::get_adv_data()
         return byte_data;
     }
 
-    byte_data = m_sensorDataParser->parse_reply(reply);
+    byte_data = m_sensorDataHandler->parse_reply(reply);
 
     dbus_message_unref(reply);
     return byte_data;

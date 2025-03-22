@@ -1,6 +1,6 @@
 CC  := g++
 
-CFLAGS := `pkg-config --cflags --libs dbus-1`
+CFLAGS := `pkg-config --cflags --libs dbus-1 libmosquitto`
 TARGET := IotDeviceHub
 INCLUDES := -I./include -I./ble -I./IotDeviceHubManager -I./mqtt
 CFLAGS += $(INCLUDES)

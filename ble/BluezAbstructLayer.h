@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <memory>
 
-#include "SensorDataParser.h"
+#include "SensorDataHandler.h"
 
 const std::string BLUEZ_PATH = "/org/bluez";
 const std::string BLUEZ_ADAPTER = "org.bluez.Adapter1";
@@ -19,7 +19,7 @@ const std::string METHOD_GET_ALL = "GetAll";
 class BluezAbstructLayer
 {
 public:
-    BluezAbstructLayer(std::shared_ptr<SensorDataParser> sensorDataParser);
+    BluezAbstructLayer(std::shared_ptr<SensorDataHandler> sensorDataHandler);
     ~BluezAbstructLayer();
 
     bool init();
@@ -28,8 +28,8 @@ public:
     std::vector<uint8_t> get_adv_data();
 
 private:
-    //TODO: To contain multiple SensorDataParser objects
-    std::shared_ptr<SensorDataParser> m_sensorDataParser;
+    //TODO: To contain multiple SensorDataHandler objects
+    std::shared_ptr<SensorDataHandler> m_sensorDataHandler;
     DBusConnection* m_conn;
     std::string m_adapter_path;
     std::string m_device_path;

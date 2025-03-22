@@ -3,48 +3,64 @@
 #include <iostream>
 #include <iomanip>
 
-void IotDeviceHubManager::addObserver(const std::shared_ptr<SensorObserver> observer)
+IotDeviceHubManager::IotDeviceHubManager()
 {
-    observers.push_back(observer);
+    //TODO: Create factory method for IotDeviceHubManager to specify IoT device
+    m_sensorDataHandler = std::make_shared<WoSensorTHDataHandler>();
+    m_bluez =std::make_unique<BluezAbstructLayer>(m_sensorDataHandler);
+    m_mqtt =std::make_unique<MqttManager>();
 }
 
-void IotDeviceHubManager::removeObserver(const std::shared_ptr<SensorObserver> observer)
+IotDeviceHubManager::~IotDeviceHubManager()
 {
-    for(auto it = observers.begin();it!=observers.end();++it)
-    {
-        if(*it == observer)
-        {
-            observers.erase(it);
-            return;
-        }
-    }
-    std::cout << "not found"<<std::endl;
+    m_bluez->stop_scan();
+    m_mqtt->stop();
 }
 
-void IotDeviceHubManager::notify(const std::vector<uint8_t>& data)
+bool IotDeviceHubManager::init()
 {
-    for(auto observer : observers)
+    if(m_mqtt->init())
     {
-        observer->update(data);
+      m_mqtt->start();
     }
+    else
+    {
+        std::cerr << "Failed to initialize MQTT" << std::endl;
+        return false;
+    }
+
+    if(m_bluez->init())
+    {
+        m_bluez->start_scan();
+    }
+    else
+    {
+        std::cerr << "Failed to initialize Bluez" << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 void IotDeviceHubManager::run()
 {
   std::vector<uint8_t> adv_data;
 
-  m_bluez->init();
-  m_bluez->start_scan();
-  sleep(10); //wait to scan devices
-
   //Todo: Implement loop logic
   for(int i = 0; i < 5; i++)
   {
     adv_data = m_bluez->get_adv_data();
-    notify(adv_data);
-    adv_data.clear();
+    if (!adv_data.empty())
+    {
+        std::vector<MqttMessage> messages = m_sensorDataHandler->createPublishMessages(adv_data);
+        for(auto message : messages)
+        {
+            m_mqtt->publishMessage(message.topic, message.message);
+        }
+        adv_data.clear();
+    }
     sleep(1);
   }
 
-  m_bluez->stop_scan();
+
 }
