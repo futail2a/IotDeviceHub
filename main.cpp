@@ -6,5 +6,6 @@ int main() {
   {
     manager.run();
   }
+  manager.stop();
   return 0;
 }

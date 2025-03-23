@@ -11,10 +11,11 @@ IotDeviceHubManager::IotDeviceHubManager()
     m_mqtt =std::make_unique<MqttManager>();
 }
 
-IotDeviceHubManager::~IotDeviceHubManager()
+void IotDeviceHubManager::stop()
 {
     m_bluez->stop_scan();
     m_mqtt->stop();
+    m_mqtt->deinit();
 }
 
 bool IotDeviceHubManager::init()

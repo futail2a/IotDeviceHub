@@ -62,7 +62,7 @@ bool MqttManager::publishMessage(const std::string topic, const std::string mess
     return true;
 }
 
-MqttManager::~MqttManager()
+void MqttManager::deinit()
 {
     mosquitto_destroy(m_mosq);
     mosquitto_lib_cleanup();

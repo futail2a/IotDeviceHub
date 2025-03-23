@@ -12,8 +12,9 @@ class MqttManager
 {
 public:
     MqttManager() = default;
-    ~MqttManager();
+    ~MqttManager() = default;
     bool init();
+    void deinit();
     void start();
     void stop();
     bool publishMessage(const std::string topic, const std::string message);

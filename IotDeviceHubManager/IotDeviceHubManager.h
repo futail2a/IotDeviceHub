@@ -11,10 +11,11 @@ class IotDeviceHubManager
 {
 public:
     IotDeviceHubManager();
-    ~IotDeviceHubManager();
+    ~IotDeviceHubManager(){};
 
     bool init();
     void run();
+    void stop();
     void notify(const std::vector<uint8_t>& data);
 
 private:
