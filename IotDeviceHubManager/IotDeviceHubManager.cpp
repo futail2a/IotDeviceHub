@@ -14,7 +14,7 @@ bool IotDeviceHubManager::init()
 
     m_mqtt =std::make_unique<MqttManager>();
 
-    if(m_mqtt->init())
+    if(m_mqtt->init("iot_device_hub"))
     {
       m_mqtt->start();
     }

@@ -20,7 +20,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
     std::cout << "Message received on topic " << msg->topic << ": " << (char *)msg->payload << std::endl;
 }
 
-bool MqttManager::init()
+bool MqttManager::init(std::string client_id)
 {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -31,7 +31,7 @@ bool MqttManager::init()
         }
     }
 
-    m_mosq = mosquitto_new("iot_device_hub", true, NULL);
+    m_mosq = mosquitto_new(client_id.c_str(), true, NULL);
     if (!m_mosq)
     {
         std::cerr << "Failed to create mosquitto instance" << std::endl;
@@ -63,6 +63,12 @@ bool MqttManager::init()
     // TODO: Reconnection logic to be implemented
 
     return true;
+}
+
+void MqttManager::deinit()
+{
+    mosquitto_destroy(m_mosq);
+    mosquitto_lib_cleanup();
 }
 
 void MqttManager::start()
@@ -99,8 +105,14 @@ bool MqttManager::publishMessage(const std::string topic, const std::string mess
     return true;
 }
 
-void MqttManager::deinit()
+bool MqttManager::subscribe(const std::string topic)
 {
-    mosquitto_destroy(m_mosq);
-    mosquitto_lib_cleanup();
+    auto res = mosquitto_subscribe(m_mosq, nullptr, topic.c_str(), 0);
+    if(res != MOSQ_ERR_SUCCESS)
+    {
+        std::cerr << "Failed to subscribe to topic: " << topic << std::endl;
+        return false;
+    }
+    std::cout << "Subscribed to topic: " << topic << std::endl;
+    return true;
 }
