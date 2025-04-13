@@ -3,23 +3,17 @@
 #include <iostream>
 #include <iomanip>
 
-IotDeviceHubManager::IotDeviceHubManager()
-{
-    //TODO: Create factory method for IotDeviceHubManager to specify IoT device
-    m_sensorDataHandler = std::make_shared<WoSensorTHDataHandler>();
-    m_bluez =std::make_unique<BluezAbstructLayer>(m_sensorDataHandler);
-    m_mqtt =std::make_unique<MqttManager>();
-}
-
-void IotDeviceHubManager::stop()
-{
-    m_bluez->stop_scan();
-    m_mqtt->stop();
-    m_mqtt->deinit();
-}
+IotDeviceHubManager::IotDeviceHubManager(){}
 
 bool IotDeviceHubManager::init()
 {
+    m_bluez =std::make_unique<BluezAbstructLayer>();
+    m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
+    m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));
+    m_bluez->add_sensor_data_handler(m_th_sensor_data_handler);
+
+    m_mqtt =std::make_unique<MqttManager>();
+
     if(m_mqtt->init())
     {
       m_mqtt->start();
@@ -45,23 +39,28 @@ bool IotDeviceHubManager::init()
 
 void IotDeviceHubManager::run()
 {
-  std::vector<uint8_t> adv_data;
-
-  //Todo: Implement loop logic
-  for(int i = 0; i < 5; i++)
+  while(true)
   {
-    adv_data = m_bluez->get_adv_data();
-    if (!adv_data.empty())
+    m_bluez->check_adv_data();
+    sleep(1);
+  }
+}
+
+void IotDeviceHubManager::stop()
+{
+    m_bluez->stop_scan();
+    m_mqtt->stop();
+    m_mqtt->deinit();
+}
+
+void IotDeviceHubManager::on_th_update(std::vector<uint8_t> data)
+{
+    if (!data.empty())
     {
-        std::vector<MqttMessage> messages = m_sensorDataHandler->createPublishMessages(adv_data);
+        std::vector<MqttMessage> messages = m_th_sensor_data_handler->createPublishMessages(data);
         for(auto message : messages)
         {
             m_mqtt->publishMessage(message.topic, message.message);
         }
-        adv_data.clear();
     }
-    sleep(1);
-  }
-
-
 }

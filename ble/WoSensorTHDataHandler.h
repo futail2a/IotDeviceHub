@@ -17,6 +17,7 @@ public:
   std::vector<uint8_t> parse_reply(DBusMessage* const reply) override;
   std::string get_device_mac() override { return m_device_mac; }
   std::vector<MqttMessage> createPublishMessages(const std::vector<uint8_t>& data) override;
+  void update(DBusMessage* const reply) override;
 
 private:
   std::vector<uint8_t> m_get_service_data(DBusMessageIter* const variant_iter);

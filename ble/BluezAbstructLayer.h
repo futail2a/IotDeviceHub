@@ -19,24 +19,22 @@ const std::string METHOD_GET_ALL = "GetAll";
 class BluezAbstructLayer
 {
 public:
-    BluezAbstructLayer(std::shared_ptr<SensorDataHandler> sensorDataHandler);
+    BluezAbstructLayer();
     ~BluezAbstructLayer();
 
     bool init();
+    void add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler);
     bool start_scan();
     bool stop_scan();
-    std::vector<uint8_t> get_adv_data();
+    std::vector<uint8_t> check_adv_data();
 
 private:
-    //TODO: To contain multiple SensorDataHandler objects
-    std::shared_ptr<SensorDataHandler> m_sensorDataHandler;
+    std::vector<std::shared_ptr<SensorDataHandler>> m_sensorDataHandlers;
     DBusConnection* m_conn;
     std::string m_adapter_path;
-    std::string m_device_path;
-    std::string m_destination;
 
+    std::string m_crate_device_path(const std::string device_mac);
     DBusMessage* m_send_dbus_message(DBusConnection* conn, const std::string& path, const std::string& interface, const std::string& method);
-
     std::vector<uint8_t> m_get_service_data(DBusMessageIter* variant_iter);
     std::vector<uint8_t> m_get_variant_byte_array(DBusMessageIter* variant_iter);
     void m_print_byte_array(const std::vector<uint8_t>& data);

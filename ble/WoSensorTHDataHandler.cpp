@@ -3,6 +3,15 @@
 #include <iostream>
 #include <iomanip>
 
+void WoSensorTHDataHandler::update(DBusMessage* const reply)
+{
+    if (m_update_cb)
+    {
+        std::vector<uint8_t> data = parse_reply(reply);
+        m_update_cb(data);
+    }
+}
+
 std::vector<uint8_t> WoSensorTHDataHandler::parse_reply(DBusMessage* const reply)
 {
   std::vector<uint8_t> byte_data;
