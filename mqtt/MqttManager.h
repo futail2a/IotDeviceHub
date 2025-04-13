@@ -6,7 +6,7 @@
 #include <mutex>
 #include <mosquitto.h>
 
-constexpr uint16_t MQTT_PORT = 1883U;
+constexpr uint16_t MQTT_PORT = 8883U;
 
 class MqttManager
 {

@@ -4,6 +4,22 @@
 #include <thread>
 #include <chrono>
 
+void on_connect(struct mosquitto *mosq, void *obj, int rc) {
+    if (rc == 0) {
+        std::cout << "Connected successfully!" << std::endl;
+    } else {
+        std::cerr << "Connection failed with code: " << rc << std::endl;
+    }
+}
+
+void on_disconnect(struct mosquitto *mosq, void *obj, int rc) {
+    std::cout << "Disconnected with code: " << rc << std::endl;
+}
+
+void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg) {
+    std::cout << "Message received on topic " << msg->topic << ": " << (char *)msg->payload << std::endl;
+}
+
 bool MqttManager::init()
 {
     {
@@ -15,16 +31,32 @@ bool MqttManager::init()
         }
     }
 
-    m_mosq = mosquitto_new("iot_device_hub", true, nullptr);
+    m_mosq = mosquitto_new("iot_device_hub", true, NULL);
     if (!m_mosq)
     {
         std::cerr << "Failed to create mosquitto instance" << std::endl;
         return false;
     }
 
-    if (mosquitto_connect(m_mosq, "localhost", MQTT_PORT, 60) != MOSQ_ERR_SUCCESS)
+    mosquitto_log_callback_set(m_mosq, [](struct mosquitto *mosq, void *userdata, int level, const char *str) {
+        std::cout << "Log: " << str << std::endl;
+    });
+    mosquitto_connect_callback_set(m_mosq, on_connect);
+    mosquitto_disconnect_callback_set(m_mosq, on_disconnect);
+    mosquitto_message_callback_set(m_mosq, on_message);
+
+    auto ret = mosquitto_tls_set(m_mosq, "/etc/mosquitto/ca_certificates/ca.crt", NULL, "client.crt",  "client.key", NULL);
+    if(ret != MOSQ_ERR_SUCCESS)
     {
-        std::cerr << "Failed to connect to broker" << std::endl;
+        std::cerr << "Failed to setup TLS " << ret << std::endl;
+    }
+
+    mosquitto_tls_insecure_set(m_mosq,true);
+
+    ret = mosquitto_connect(m_mosq, "127.0.0.1", MQTT_PORT, 60);
+    if(ret != MOSQ_ERR_SUCCESS)
+    {
+        std::cerr << "Failed to connect to broker: " << ret <<std::endl;
         return false;
     }
 
@@ -35,7 +67,12 @@ bool MqttManager::init()
 
 void MqttManager::start()
 {
-    mosquitto_loop_start(m_mosq);
+    int ret = mosquitto_loop_start(m_mosq);
+    if (ret != MOSQ_ERR_SUCCESS) {
+        std::cerr << "Error: failed to start mosquitto loop: " << ret << std::endl;
+        mosquitto_disconnect(m_mosq);
+        return;
+    }
 }
 
 void MqttManager::stop()
@@ -52,7 +89,7 @@ bool MqttManager::publishMessage(const std::string topic, const std::string mess
     int messageId = 0;
     auto ret = mosquitto_publish(m_mosq, &messageId, t, static_cast<int>(msize), m, 0, false);
     if (ret != MOSQ_ERR_SUCCESS) {
-        std::cerr << "Error: failed to publish message" << std::endl;
+        std::cerr << "Error: failed to publish message: " << ret << std::endl;
         mosquitto_disconnect(m_mosq);
         return false;
     }
