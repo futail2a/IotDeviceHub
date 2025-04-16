@@ -1,5 +1,6 @@
 #include "BluezAbstructLayer.h"
 #include "WoSensorTHDataHandler.h"
+#include "MotionSensorDataHandler.h"
 #include "SensorDataHandler.h"
 #include "MqttManager.h"
 #include <iostream>
@@ -20,8 +21,10 @@ public:
 
 private:
     std::shared_ptr<SensorDataHandler> m_th_sensor_data_handler;
+    std::shared_ptr<SensorDataHandler> m_motion_sensor_data_handler;
     std::unique_ptr<BluezAbstructLayer> m_bluez;
     std::unique_ptr<MqttManager> m_mqtt;
 
     void on_th_update(std::vector<uint8_t> data);
+    void on_motion_update(std::vector<uint8_t> data);
 };

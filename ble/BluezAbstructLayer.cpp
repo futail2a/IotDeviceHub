@@ -72,13 +72,13 @@ bool BluezAbstructLayer::stop_scan()
     return true;
 }
 
-std::vector<uint8_t> BluezAbstructLayer::check_adv_data()
+void BluezAbstructLayer::check_adv_data()
 {
     std::vector<uint8_t> byte_data={};
 
     if (!m_conn) {
         std::cerr << "DBus connection not initialized" << std::endl;
-        return byte_data;
+        return;
     }
 
     for(auto itr = m_sensorDataHandlers.begin(); itr != m_sensorDataHandlers.end(); ++itr)
@@ -88,7 +88,7 @@ std::vector<uint8_t> BluezAbstructLayer::check_adv_data()
         DBusMessage* msg = dbus_message_new_method_call(BLUEZ_SERVICE.c_str(), device_path.c_str(), DBUS_PROPERTIES.c_str(), METHOD_GET_ALL.c_str());
         if (!msg) {
             std::cerr << "Failed to create DBus message\n";
-            return byte_data;
+            break;
         }
 
         const char* interface_name = BLUEZ_DEVICE.c_str();
@@ -104,22 +104,18 @@ std::vector<uint8_t> BluezAbstructLayer::check_adv_data()
         {
             std::cerr << "DBus error: " << err.message << std::endl;
             dbus_error_free(&err);
-            return byte_data;
+            break;
         }
 
         if (!reply)
         {
             std::cerr << "Failed to get properties for " << device_path << "\n";
-            return byte_data;
+            break;
         }
 
         (*itr)->update(reply);
         dbus_message_unref(reply);
-        break;
-
     }
-
-    return byte_data;
 }
 
 std::string BluezAbstructLayer::m_crate_device_path(const std::string device_mac)

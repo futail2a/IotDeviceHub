@@ -16,6 +16,8 @@ int main() {
 
   mqtt_manager.subscribe("iot_device_hub/sensor_data/bed_room/temperature");
   mqtt_manager.subscribe("iot_device_hub/sensor_data/bed_room/humidity");
+  mqtt_manager.subscribe("iot_device_hub/sensor_data/entrance/pir_utc");
+  mqtt_manager.subscribe("iot_device_hub/sensor_data/entrance/light_intensity");
 
   while (true) {
     sleep(1);

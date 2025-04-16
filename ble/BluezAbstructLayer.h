@@ -26,7 +26,7 @@ public:
     void add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler);
     bool start_scan();
     bool stop_scan();
-    std::vector<uint8_t> check_adv_data();
+    void check_adv_data();
 
 private:
     std::vector<std::shared_ptr<SensorDataHandler>> m_sensorDataHandlers;

@@ -19,15 +19,11 @@ public:
     SensorDataHandler() = default;
     virtual ~SensorDataHandler() = default;
 
-    void set_update_cb(UpdateCb cb){m_update_cb = cb;};
-
+    virtual void set_update_cb(UpdateCb cb)=0;
     virtual std::vector<uint8_t> parse_reply(DBusMessage* const reply) = 0;
     virtual std::string get_device_mac() = 0;
     virtual std::vector<MqttMessage> createPublishMessages(const std::vector<uint8_t>& data) = 0;
     virtual void update(DBusMessage* const reply) = 0;
-
-protected:
-    UpdateCb m_update_cb;
 };
 
 #endif
