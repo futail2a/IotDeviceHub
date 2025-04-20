@@ -3,11 +3,9 @@
 #include <iostream>
 #include <iomanip>
 
-// namespace motion_sensor
-// {
-    constexpr uint8_t SERVICEDATA_LEN = 6;
-    constexpr uint8_t BIT_7_MASK = 0x80;
-    constexpr uint8_t BIT_1_0_MASK = 0x03;
+constexpr uint8_t SERVICEDATA_LEN = 6;
+constexpr uint8_t BIT_7_MASK = 0x80;
+constexpr uint8_t BIT_1_0_MASK = 0x03;
 
 void MotionSensorDataHandler::update(DBusMessage* const reply)
 {
@@ -215,12 +213,6 @@ std::vector<MqttMessage> MotionSensorDataHandler::createPublishMessages(const st
         MqttMessage pir_time_message{pir_time_topic_str, pir_time_str};
         messages.emplace_back(pir_time_message);
 
-        // uint8_t pir_time = data[5]&BIT_7_MASK;
-        // std::string pir_time_str = "Since the last trigger PIR time (s): " + std::to_string((int)pir_time);
-        // MqttMessage pir_time_message{pir_time_topic_str, pir_time_str};
-        // std::cout <<pir_time_str << std::endl;
-        // messages.emplace_back(pir_time_message);
-
         std::string light_intensity_topic_str = IOT_TOPIC_SENS_DATA_BASE + "/entrance" + IOT_TOPIC_SENS_DATA_LIGHT_INTENSITY;
         uint8_t light_intensity = data[5]&BIT_1_0_MASK;
         std::string light_intensity_str;
@@ -243,5 +235,3 @@ std::vector<MqttMessage> MotionSensorDataHandler::createPublishMessages(const st
 
     return messages;
 }
-
-// }

@@ -24,7 +24,7 @@ private:
 
   // Hardcord the MAC address of the device to be found
   // TODO: To find target adv data by service UUID
-  const std::string m_device_mac = "B0:E9:FE:55:04:12";
+  const std::string m_device_mac = "";
 };
 
 #endif

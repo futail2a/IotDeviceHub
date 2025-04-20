@@ -47,7 +47,7 @@ void IotDeviceHubManager::run()
   while(true)
   {
     m_bluez->check_adv_data();
-    sleep(3);
+    sleep(1);
   }
 }
 
