@@ -17,8 +17,8 @@ public:
     void deinit();
     void start();
     void stop();
-    bool publishMessage(const std::string topic, const std::string message);
-    bool subscribe(const std::string topic);
+    bool publishMessage(const std::string topic, const std::string message, const int qos=0, const bool retain=false, const mosquitto_property *properties=nullptr);
+    bool subscribe(const std::string topic, const int qos=0, const int options=0, const mosquitto_property *properties=nullptr);
 
 private:
     struct mosquitto* m_mosq;

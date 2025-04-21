@@ -4,11 +4,15 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <mosquitto.h>
 
 struct MqttMessage
 {
     std::string topic;
     std::string message;
+    int qos=0;
+    bool retain=false;
+    mosquitto_property* properties=nullptr;
 };
 
 using UpdateCb = std::function <void(std::vector<uint8_t>)>;

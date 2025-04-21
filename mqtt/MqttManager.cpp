@@ -4,7 +4,9 @@
 #include <thread>
 #include <chrono>
 
-void on_connect(struct mosquitto *mosq, void *obj, int rc) {
+#include "mqtt_protocol.h"
+
+void on_connect(struct mosquitto *mosq, void *obj, int rc, int flags, const mosquitto_property *props) {
     if (rc == 0) {
         std::cout << "Connected successfully!" << std::endl;
     } else {
@@ -12,11 +14,11 @@ void on_connect(struct mosquitto *mosq, void *obj, int rc) {
     }
 }
 
-void on_disconnect(struct mosquitto *mosq, void *obj, int rc) {
+void on_disconnect(struct mosquitto *mosq, void *obj, int rc, const mosquitto_property *props) {
     std::cout << "Disconnected with code: " << rc << std::endl;
 }
 
-void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg) {
+void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg, const mosquitto_property *props) {
     std::cout << "Message received on topic " << msg->topic << ": " << (char *)msg->payload << std::endl;
 }
 
@@ -38,12 +40,15 @@ bool MqttManager::init(std::string client_id)
         return false;
     }
 
-    mosquitto_log_callback_set(m_mosq, [](struct mosquitto *mosq, void *userdata, int level, const char *str) {
-        std::cout << "Log: " << str << std::endl;
-    });
-    mosquitto_connect_callback_set(m_mosq, on_connect);
-    mosquitto_disconnect_callback_set(m_mosq, on_disconnect);
-    mosquitto_message_callback_set(m_mosq, on_message);
+    mosquitto_int_option(m_mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
+
+    // mosquitto_log_callback_set(m_mosq, [](struct mosquitto *mosq, void *userdata, int level, const char *str) {
+    //     std::cout << "Log: " << str << std::endl;
+    // });
+
+    mosquitto_connect_v5_callback_set(m_mosq, on_connect);
+    mosquitto_disconnect_v5_callback_set(m_mosq, on_disconnect);
+    mosquitto_message_v5_callback_set(m_mosq, on_message);
 
     auto ret = mosquitto_tls_set(m_mosq, "/etc/mosquitto/ca_certificates/ca.crt", NULL, "client.crt",  "client.key", NULL);
     if(ret != MOSQ_ERR_SUCCESS)
@@ -53,7 +58,7 @@ bool MqttManager::init(std::string client_id)
 
     mosquitto_tls_insecure_set(m_mosq,true);
 
-    ret = mosquitto_connect(m_mosq, "127.0.0.1", MQTT_PORT, 60);
+    ret = mosquitto_connect_bind_v5(m_mosq, "127.0.0.1", MQTT_PORT, 60, nullptr, nullptr);
     if(ret != MOSQ_ERR_SUCCESS)
     {
         std::cerr << "Failed to connect to broker: " << ret <<std::endl;
@@ -76,7 +81,7 @@ void MqttManager::start()
     int ret = mosquitto_loop_start(m_mosq);
     if (ret != MOSQ_ERR_SUCCESS) {
         std::cerr << "Error: failed to start mosquitto loop: " << ret << std::endl;
-        mosquitto_disconnect(m_mosq);
+        mosquitto_disconnect_v5(m_mosq, MQTT_RC_UNSPECIFIED, nullptr);
         return;
     }
 }
@@ -84,19 +89,35 @@ void MqttManager::start()
 void MqttManager::stop()
 {
     mosquitto_loop_stop(m_mosq, true);
-    mosquitto_disconnect(m_mosq);
+    mosquitto_disconnect_v5(m_mosq, MQTT_RC_NORMAL_DISCONNECTION, nullptr);
 }
 
-bool MqttManager::publishMessage(const std::string topic, const std::string message)
+bool MqttManager::publishMessage(const std::string topic, const std::string message, const int qos, const bool retain, const mosquitto_property *properties)
 {
+    if (!m_mosq) {
+        std::cerr << "Mosquitto instance not initialized" << std::endl;
+        return false;
+    }
+
+    if (topic.empty()) {
+        std::cerr << "Topic is empty" << std::endl;
+        return false;
+    }
+
+    if (message.empty()) {
+        std::cerr << "Message is empty" << std::endl;
+        return false;
+    }
+
     const char *t = topic.c_str();
     const char *m = message.c_str();
     size_t msize = message.size();
     int messageId = 0;
-    auto ret = mosquitto_publish(m_mosq, &messageId, t, static_cast<int>(msize), m, 0, false);
+    auto ret = mosquitto_publish_v5(m_mosq, &messageId, t, static_cast<int>(msize), m, qos, retain, properties);
+
     if (ret != MOSQ_ERR_SUCCESS) {
         std::cerr << "Error: failed to publish message: " << ret << std::endl;
-        mosquitto_disconnect(m_mosq);
+        mosquitto_disconnect_v5(m_mosq, MQTT_RC_UNSPECIFIED, nullptr);
         return false;
     }
     std::cout << "Message published to topic " << topic << std::endl;
@@ -105,9 +126,20 @@ bool MqttManager::publishMessage(const std::string topic, const std::string mess
     return true;
 }
 
-bool MqttManager::subscribe(const std::string topic)
+bool MqttManager::subscribe(const std::string topic, const int qos, const int options, const mosquitto_property *properties)
 {
-    auto res = mosquitto_subscribe(m_mosq, nullptr, topic.c_str(), 0);
+    if (!m_mosq) {
+        std::cerr << "Mosquitto instance not initialized" << std::endl;
+        return false;
+    }
+
+    if (topic.empty()) {
+        std::cerr << "Topic is empty" << std::endl;
+        return false;
+    }
+
+    int messageId = 0;
+    auto res = mosquitto_subscribe_v5(m_mosq, &messageId, topic.c_str(), qos, options, properties);
     if(res != MOSQ_ERR_SUCCESS)
     {
         std::cerr << "Failed to subscribe to topic: " << topic << std::endl;

@@ -12,7 +12,7 @@ CLIENT_TARGET := IotDeviceClient
 CLIENT_SRCS   := $(shell find . -name '*.cpp' -not -path './IotDeviceHubManager/*' )
 CLIENT_SRCS += client/main.cpp
 
-all: clean $(DEFAULT_TARGET)
+all: $(DEFAULT_TARGET)
 
 $(DEFAULT_TARGET): $(DEFAULT_SRCS)
 	$(CC) -o $@ $^ $(CFLAGS)

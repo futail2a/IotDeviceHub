@@ -210,7 +210,8 @@ std::vector<MqttMessage> MotionSensorDataHandler::createPublishMessages(const st
         std::string pir_time_topic_str = IOT_TOPIC_SENS_DATA_BASE + "/entrance" + IOT_TOPIC_SENS_DATA_PIR_UTC;
         uint16_t pir_time = (static_cast<uint16_t>(data[3]) << 8) | static_cast<uint16_t>(data[4]);
         std::string pir_time_str = "Since the last trigger PIR time (s): " + std::to_string(pir_time);
-        MqttMessage pir_time_message{pir_time_topic_str, pir_time_str};
+        mosquitto_property* properties = nullptr;
+        MqttMessage pir_time_message{pir_time_topic_str, pir_time_str,0,false,properties};
         messages.emplace_back(pir_time_message);
 
         std::string light_intensity_topic_str = IOT_TOPIC_SENS_DATA_BASE + "/entrance" + IOT_TOPIC_SENS_DATA_LIGHT_INTENSITY;
