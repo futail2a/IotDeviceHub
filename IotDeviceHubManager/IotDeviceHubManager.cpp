@@ -9,9 +9,9 @@ bool IotDeviceHubManager::init()
 {
     m_bluez =std::make_unique<BluezAbstructLayer>();
 
-    m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
-    m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));
-    m_bluez->add_sensor_data_handler(m_th_sensor_data_handler);
+    // m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
+    // m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));
+    // m_bluez->add_sensor_data_handler(m_th_sensor_data_handler);
 
     m_motion_sensor_data_handler = std::make_shared<MotionSensorDataHandler>();
     m_motion_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_motion_update, this, std::placeholders::_1));
@@ -75,6 +75,12 @@ void IotDeviceHubManager::on_motion_update(std::vector<uint8_t> data)
     if (!data.empty())
     {
         std::vector<MqttMessage> messages = m_motion_sensor_data_handler->createPublishMessages(data);
+        // Messages will be empty if the data is not updated, to reduce Publish overhead
+        if(messages.empty())
+        {
+            // std::cerr << "No messages to publish" << std::endl;
+            return;
+        }
         for(auto message : messages)
         {
             m_mqtt->publishMessage(message.topic, message.message);

@@ -104,7 +104,7 @@ std::vector<uint8_t> MotionSensorDataHandler::m_get_service_data(DBusMessageIter
            {
               char* uuid;
               dbus_message_iter_get_basic(&dict_entry, &uuid);
-              std::cout << "Service UUID: " << uuid << std::endl;
+            //   std::cout << "Service UUID: " << uuid << std::endl;
 
               dbus_message_iter_next(&dict_entry);
 
@@ -198,6 +198,9 @@ void MotionSensorDataHandler::m_print_sensor_data(const std::vector<uint8_t>& da
 
 std::vector<MqttMessage> MotionSensorDataHandler::createPublishMessages(const std::vector<uint8_t>& data)
 {
+    static uint16_t last_pir=0U;
+    static uint8_t last_light_intensity=0U;
+
     std::vector<MqttMessage> messages;
 
     if(data.size() > SERVICEDATA_LEN)
@@ -209,29 +212,42 @@ std::vector<MqttMessage> MotionSensorDataHandler::createPublishMessages(const st
         // TODO: room in topic to be configurable
         std::string pir_time_topic_str = IOT_TOPIC_SENS_DATA_BASE + "/entrance" + IOT_TOPIC_SENS_DATA_PIR_UTC;
         uint16_t pir_time = (static_cast<uint16_t>(data[3]) << 8) | static_cast<uint16_t>(data[4]);
-        std::string pir_time_str = "Since the last trigger PIR time (s): " + std::to_string(pir_time);
-        mosquitto_property* properties = nullptr;
-        MqttMessage pir_time_message{pir_time_topic_str, pir_time_str,0,false,properties};
-        messages.emplace_back(pir_time_message);
+
+        // Check if the PIR time has changes
+        if(pir_time < last_pir)
+        {
+            std::string pir_time_str = "Since the last trigger PIR time (s): " + std::to_string(pir_time);
+            mosquitto_property* properties = nullptr;
+            MqttMessage pir_time_message{pir_time_topic_str, pir_time_str,0,false,properties};
+            messages.emplace_back(pir_time_message);
+        }
+        last_pir = pir_time;
+
 
         std::string light_intensity_topic_str = IOT_TOPIC_SENS_DATA_BASE + "/entrance" + IOT_TOPIC_SENS_DATA_LIGHT_INTENSITY;
         uint8_t light_intensity = data[5]&BIT_1_0_MASK;
-        std::string light_intensity_str;
-        if(light_intensity==1U)
+
+        // Check if the light intensity has changed
+        if(light_intensity != last_light_intensity)
         {
-          light_intensity_str = "Light Intensity: dark";
+            std::string light_intensity_str;
+            if(light_intensity==1U)
+            {
+              light_intensity_str = "Light Intensity: dark";
+            }
+            else if(light_intensity==2U)
+            {
+              light_intensity_str = "Light Intensity: bright";
+            }
+            else
+            {
+              light_intensity_str = "Light Intensity: unknown (" + std::to_string(light_intensity) + ")";
+              std::cerr << "ERROR: Unexpected light intensity value" << std::endl;
+            }
+            MqttMessage light_intensity_message{light_intensity_topic_str, light_intensity_str};
+            messages.emplace_back(light_intensity_message);
         }
-        else if(light_intensity==2U)
-        {
-          light_intensity_str = "Light Intensity: bright";
-        }
-        else
-        {
-          light_intensity_str = "Light Intensity: unknown (" + std::to_string(light_intensity) + ")";
-          std::cerr << "ERROR: Unexpected light intensity value" << std::endl;
-        }
-        MqttMessage light_intensity_message{light_intensity_topic_str, light_intensity_str};
-        messages.emplace_back(light_intensity_message);
+        last_light_intensity = light_intensity;
     }
 
     return messages;

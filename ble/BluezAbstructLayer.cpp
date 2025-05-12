@@ -28,6 +28,8 @@ bool BluezAbstructLayer::init()
         dbus_error_free(&err);
         return false;
     }
+
+    createDbusMessages();
     return true;
 }
 
@@ -72,6 +74,25 @@ bool BluezAbstructLayer::stop_scan()
     return true;
 }
 
+// Create messages in advance
+void BluezAbstructLayer::createDbusMessages()
+{
+    for(auto itr : m_sensorDataHandlers)
+    {
+        std::string device_path = m_crate_device_path(itr->get_device_mac());
+        DBusMessage* msg = dbus_message_new_method_call(BLUEZ_SERVICE.c_str(), device_path.c_str(), DBUS_PROPERTIES.c_str(), METHOD_GET_ALL.c_str());
+        if (!msg) {
+            std::cerr << "Failed to create DBus message\n";
+            return;
+        }
+        const char* interface_name = BLUEZ_DEVICE.c_str();
+        dbus_message_append_args(msg, DBUS_TYPE_STRING, &interface_name, DBUS_TYPE_INVALID);
+
+        std::unique_ptr<DBusMessage, DBusDeleter> uMsg(msg);
+        m_dbus_messages.push_back(std::move(uMsg));
+    }
+}
+
 void BluezAbstructLayer::check_adv_data()
 {
     std::vector<uint8_t> byte_data={};
@@ -81,14 +102,14 @@ void BluezAbstructLayer::check_adv_data()
         return;
     }
 
-    for(auto itr = m_sensorDataHandlers.begin(); itr != m_sensorDataHandlers.end(); ++itr)
+    auto itr = m_sensorDataHandlers.begin();
     {
         (*itr)->get_device_mac();
         std::string device_path = m_crate_device_path((*itr)->get_device_mac());
         DBusMessage* msg = dbus_message_new_method_call(BLUEZ_SERVICE.c_str(), device_path.c_str(), DBUS_PROPERTIES.c_str(), METHOD_GET_ALL.c_str());
         if (!msg) {
             std::cerr << "Failed to create DBus message\n";
-            break;
+            return;
         }
 
         const char* interface_name = BLUEZ_DEVICE.c_str();
@@ -96,26 +117,29 @@ void BluezAbstructLayer::check_adv_data()
 
         DBusError err;
         dbus_error_init(&err);
+        while(true){
+            DBusMessage* reply = dbus_connection_send_with_reply_and_block(m_conn, msg, -1, &err);
 
-        DBusMessage* reply = dbus_connection_send_with_reply_and_block(m_conn, msg, -1, &err);
-        dbus_message_unref(msg);
+            if (dbus_error_is_set(&err))
+            {
+                std::cerr << "DBus error: " << err.message << std::endl;
+                dbus_error_free(&err);
+                continue;
+            }
 
-        if (dbus_error_is_set(&err))
-        {
-            std::cerr << "DBus error: " << err.message << std::endl;
-            dbus_error_free(&err);
-            break;
-        }
+            if (!reply)
+            {
+                std::cerr << "Failed to get properties for " << device_path << "\n";
+                continue;
+            }
 
-        if (!reply)
-        {
-            std::cerr << "Failed to get properties for " << device_path << "\n";
-            break;
-        }
+            (*itr)->update(reply);
+            dbus_message_unref(reply);
+            sleep(0.1);
 
-        (*itr)->update(reply);
-        dbus_message_unref(reply);
+        }dbus_message_unref(msg);
     }
+
 }
 
 std::string BluezAbstructLayer::m_crate_device_path(const std::string device_mac)
