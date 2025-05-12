@@ -27,6 +27,12 @@ struct DBusDeleter
     }
 };
 
+struct DbusMessageContainer
+{
+    std::unique_ptr<DBusMessage, DBusDeleter> msg;
+    std::shared_ptr<SensorDataHandler> handler;
+};
+
 class BluezAbstructLayer
 {
 public:
@@ -43,7 +49,7 @@ private:
     std::vector<std::shared_ptr<SensorDataHandler>> m_sensorDataHandlers;
     DBusConnection* m_conn;
     std::string m_adapter_path;
-    std::vector<std::unique_ptr<DBusMessage, DBusDeleter>> m_dbus_messages;
+    std::vector<DbusMessageContainer> m_dbus_messages;
 
     std::string m_crate_device_path(const std::string device_mac);
     DBusMessage* m_send_dbus_message(DBusConnection* conn, const std::string& path, const std::string& interface, const std::string& method);
