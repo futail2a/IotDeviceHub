@@ -36,6 +36,7 @@ bool BluezAbstructLayer::init()
 
 void BluezAbstructLayer::add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler)
 {
+
     if (sensorDataHandler) {
         m_sensorDataHandlers.push_back(sensorDataHandler);
     } else {
@@ -215,7 +216,7 @@ std::vector<uint8_t> BluezAbstructLayer::parse_reply(DBusMessage* const reply)
                               dbus_message_iter_recurse(&entry_iter, &variant_iter);
                               if (std::string(key) == "ServiceData") {
                                     byte_data = m_get_service_data(&variant_iter);
-                                    //m_print_byte_array(byte_data);
+                                    // m_print_byte_array(byte_data);
                               }
                           }
                       }

@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <memory>
 
+#include "BluetoothAbstructLayer.h"
 #include "SensorDataHandler.h"
 
 const std::string BLUEZ_PATH = "/org/bluez";
@@ -33,17 +34,17 @@ struct DbusMessageContainer
     std::shared_ptr<SensorDataHandler> handler;
 };
 
-class BluezAbstructLayer
+class BluezAbstructLayer : public BluetoothAbstructLayer
 {
 public:
     BluezAbstructLayer();
     ~BluezAbstructLayer();
 
-    bool init();
-    void add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler);
-    bool start_scan();
-    bool stop_scan();
-    void check_adv_data();
+    bool init() override;
+    void add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler) override;
+    bool start_scan() override;
+    bool stop_scan() override;
+    void check_adv_data() override;
 
 private:
     std::vector<std::shared_ptr<SensorDataHandler>> m_sensorDataHandlers;

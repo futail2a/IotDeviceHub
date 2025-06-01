@@ -1,20 +1,21 @@
 #include "IotDeviceHubManager.h"
 #include "BluezAbstructLayer.h"
 #include <iostream>
+#include <unistd.h>
 
 IotDeviceHubManager::IotDeviceHubManager(){}
 
 bool IotDeviceHubManager::init()
 {
-    m_bluez =std::make_unique<BluezAbstructLayer>();
+    m_bluetooth =std::make_unique<BluezAbstructLayer>();
 
     m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
     m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));
-    m_bluez->add_sensor_data_handler(m_th_sensor_data_handler);
+    m_bluetooth->add_sensor_data_handler(m_th_sensor_data_handler);
 
     m_motion_sensor_data_handler = std::make_shared<MotionSensorDataHandler>();
     m_motion_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_motion_update, this, std::placeholders::_1));
-    m_bluez->add_sensor_data_handler(m_motion_sensor_data_handler);
+    m_bluetooth->add_sensor_data_handler(m_motion_sensor_data_handler);
 
     m_mqtt =std::make_unique<MqttManager>();
 
@@ -28,9 +29,9 @@ bool IotDeviceHubManager::init()
         return false;
     }
 
-    if(m_bluez->init())
+    if(m_bluetooth->init())
     {
-        m_bluez->start_scan();
+        m_bluetooth->start_scan();
     }
     else
     {
@@ -45,14 +46,14 @@ void IotDeviceHubManager::run()
 {
   while(true)
   {
-    m_bluez->check_adv_data();
+    m_bluetooth->check_adv_data();
     sleep(1);
   }
 }
 
 void IotDeviceHubManager::stop()
 {
-    m_bluez->stop_scan();
+    m_bluetooth->stop_scan();
     m_mqtt->stop();
     m_mqtt->deinit();
 }

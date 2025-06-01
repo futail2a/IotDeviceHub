@@ -1,4 +1,4 @@
-#include "BluezAbstructLayer.h"
+#include "BluetoothAbstructLayer.h"
 #include "WoSensorTHDataHandler.h"
 #include "MotionSensorDataHandler.h"
 #include "SensorDataHandler.h"
@@ -22,7 +22,7 @@ public:
 private:
     std::shared_ptr<SensorDataHandler> m_th_sensor_data_handler;
     std::shared_ptr<SensorDataHandler> m_motion_sensor_data_handler;
-    std::unique_ptr<BluezAbstructLayer> m_bluez;
+    std::unique_ptr<BluetoothAbstructLayer> m_bluetooth;
     std::unique_ptr<MqttManager> m_mqtt;
 
     void on_th_update(std::vector<uint8_t> data);
