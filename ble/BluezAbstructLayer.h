@@ -53,8 +53,10 @@ private:
 
     std::string m_crate_device_path(const std::string device_mac);
     DBusMessage* m_send_dbus_message(DBusConnection* conn, const std::string& path, const std::string& interface, const std::string& method);
-    std::vector<uint8_t> m_get_service_data(DBusMessageIter* variant_iter);
-    std::vector<uint8_t> m_get_variant_byte_array(DBusMessageIter* variant_iter);
+    std::vector<uint8_t> parse_reply(DBusMessage* const reply);
+    std::vector<uint8_t> m_get_service_data(DBusMessageIter* const variant_iter);
+    std::vector<uint8_t> m_get_variant_byte_array(DBusMessageIter* const variant_iter);
+
     void m_print_byte_array(const std::vector<uint8_t>& data);
     void createDbusMessages();
 };

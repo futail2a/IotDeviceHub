@@ -1,7 +1,6 @@
 #include "IotDeviceHubManager.h"
 #include "BluezAbstructLayer.h"
 #include <iostream>
-#include <iomanip>
 
 IotDeviceHubManager::IotDeviceHubManager(){}
 
@@ -9,9 +8,9 @@ bool IotDeviceHubManager::init()
 {
     m_bluez =std::make_unique<BluezAbstructLayer>();
 
-    // m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
-    // m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));
-    // m_bluez->add_sensor_data_handler(m_th_sensor_data_handler);
+    m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
+    m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));
+    m_bluez->add_sensor_data_handler(m_th_sensor_data_handler);
 
     m_motion_sensor_data_handler = std::make_shared<MotionSensorDataHandler>();
     m_motion_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_motion_update, this, std::placeholders::_1));
