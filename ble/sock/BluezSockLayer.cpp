@@ -1,4 +1,4 @@
-#include "HciAbstructLayer.h"
+#include "BluezSockLayer.h"
 
 #include <iostream>
 #include <iomanip>
@@ -9,15 +9,15 @@
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 
-HciAbstructLayer::HciAbstructLayer()
+BluezSockLayer::BluezSockLayer()
 {
 }
 
-HciAbstructLayer::~HciAbstructLayer()
+BluezSockLayer::~BluezSockLayer()
 {
 }
 
-bool HciAbstructLayer::init()
+bool BluezSockLayer::init()
 {
     int device_id = hci_get_route(nullptr);
     if (device_id < 0)
@@ -54,7 +54,7 @@ bool HciAbstructLayer::init()
     return true;
 }
 
-void HciAbstructLayer::add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler)
+void BluezSockLayer::add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler)
 {
     if (sensorDataHandler)
     {
@@ -74,7 +74,7 @@ void HciAbstructLayer::add_sensor_data_handler(std::shared_ptr<SensorDataHandler
     }
 }
 
-bool HciAbstructLayer::start_scan()
+bool BluezSockLayer::start_scan()
 {
     struct hci_filter new_filter;
     hci_filter_clear(&new_filter);
@@ -104,7 +104,7 @@ bool HciAbstructLayer::start_scan()
     return true;
 }
 
-bool HciAbstructLayer::stop_scan()
+bool BluezSockLayer::stop_scan()
 {
     hci_le_set_scan_enable(m_sock, 0x00, 0x00, 1000);
     close(m_sock);
@@ -112,7 +112,7 @@ bool HciAbstructLayer::stop_scan()
     return true;
 }
 
-std::string HciAbstructLayer::to_lower_mac(const uint8_t* addr) {
+std::string BluezSockLayer::to_lower_mac(const uint8_t* addr) {
     std::ostringstream oss;
     for (int i = MAC_LENGTH-1; i >= 0; --i)
     {
@@ -121,7 +121,7 @@ std::string HciAbstructLayer::to_lower_mac(const uint8_t* addr) {
     return oss.str();
 }
 
-void HciAbstructLayer::check_adv_data()
+void BluezSockLayer::check_adv_data()
 {
     uint8_t buf[HCI_MAX_EVENT_SIZE];
     int len = read(m_sock, buf, sizeof(buf));

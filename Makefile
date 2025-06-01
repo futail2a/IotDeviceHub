@@ -1,7 +1,7 @@
 CC  := g++
 
 CFLAGS := `pkg-config --cflags --libs dbus-1 libmosquitto `
-INCLUDES := -I./include -I./ble/bluez -I./ble/hci -I./IotDeviceHubManager -I./mqtt -I./devices
+INCLUDES := -I./include -I./ble/dbus -I./ble/sock -I./IotDeviceHubManager -I./mqtt -I./devices
 CFLAGS += $(INCLUDES)
 LDFLAGS := -lbluetooth
 

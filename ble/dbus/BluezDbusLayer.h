@@ -1,5 +1,5 @@
-#ifndef BLUEZ_ABSTRUCT_LAYER_H
-#define BLUEZ_ABSTRUCT_LAYER_H
+#ifndef BLUEZ_DBUS_LAYER_H
+#define BLUEZ_DBUS_LAYER_H
 
 #include <string>
 #include <vector>
@@ -34,11 +34,11 @@ struct DbusMessageContainer
     std::shared_ptr<SensorDataHandler> handler;
 };
 
-class BluezAbstructLayer : public BluetoothAbstructLayer
+class BluezDbusLayer : public BluetoothAbstructLayer
 {
 public:
-    BluezAbstructLayer();
-    ~BluezAbstructLayer();
+    BluezDbusLayer();
+    ~BluezDbusLayer();
 
     bool init() override;
     void add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler) override;

@@ -1,6 +1,6 @@
-// #include "IotDeviceHubManager.h"
-#include "BluezAbstructLayer.h"
-#include "HciAbstructLayer.h"
+#include "IotDeviceHubManager.h"
+#include "BluezDbusLayer.h"
+// #include "BluezSockLayer.h"
 #include <iostream>
 #include <unistd.h>
 
@@ -8,8 +8,8 @@ IotDeviceHubManager::IotDeviceHubManager(){}
 
 bool IotDeviceHubManager::init()
 {
-    m_bluetooth =std::make_unique<BluezAbstructLayer>();
-    // m_bluetooth =std::make_unique<HciAbstructLayer>();
+    m_bluetooth =std::make_unique<BluezDbusLayer>();
+    // m_bluetooth =std::make_unique<BluezSockLayer>();
 
     m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
     m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));

@@ -1,4 +1,4 @@
-#include "BluezAbstructLayer.h"
+#include "BluezDbusLayer.h"
 
 #include <iostream>
 #include <cstring>
@@ -6,20 +6,20 @@
 #include <fstream>
 #include <iomanip>
 
-BluezAbstructLayer::BluezAbstructLayer()
+BluezDbusLayer::BluezDbusLayer()
 {
     m_conn = nullptr;
     m_adapter_path = BLUEZ_PATH + "/hci0";
 }
 
-BluezAbstructLayer::~BluezAbstructLayer()
+BluezDbusLayer::~BluezDbusLayer()
 {
     if (m_conn) {
         dbus_connection_unref(m_conn);
     }
 }
 
-bool BluezAbstructLayer::init()
+bool BluezDbusLayer::init()
 {
     DBusError err;
     dbus_error_init(&err);
@@ -35,7 +35,7 @@ bool BluezAbstructLayer::init()
     return true;
 }
 
-void BluezAbstructLayer::add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler)
+void BluezDbusLayer::add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler)
 {
 
     if (sensorDataHandler) {
@@ -45,7 +45,7 @@ void BluezAbstructLayer::add_sensor_data_handler(std::shared_ptr<SensorDataHandl
     }
 }
 
-bool BluezAbstructLayer::start_scan()
+bool BluezDbusLayer::start_scan()
 {
     if (!m_conn) {
         std::cerr << "DBus connection not initialized" << std::endl;
@@ -61,7 +61,7 @@ bool BluezAbstructLayer::start_scan()
     return true;
 }
 
-bool BluezAbstructLayer::stop_scan()
+bool BluezDbusLayer::stop_scan()
 {
     if (!m_conn) {
         std::cerr << "DBus connection not initialized" << std::endl;
@@ -78,7 +78,7 @@ bool BluezAbstructLayer::stop_scan()
 }
 
 // Create messages in advance
-void BluezAbstructLayer::createDbusMessages()
+void BluezDbusLayer::createDbusMessages()
 {
     for(auto itr : m_sensorDataHandlers)
     {
@@ -96,7 +96,7 @@ void BluezAbstructLayer::createDbusMessages()
     }
 }
 
-void BluezAbstructLayer::check_adv_data()
+void BluezDbusLayer::check_adv_data()
 {
     std::vector<uint8_t> byte_data={};
 
@@ -129,14 +129,14 @@ void BluezAbstructLayer::check_adv_data()
     }
 }
 
-std::string BluezAbstructLayer::m_crate_device_path(const std::string device_mac)
+std::string BluezDbusLayer::m_crate_device_path(const std::string device_mac)
 {
     std::string device_path = m_adapter_path + "/dev_" + device_mac;
     std::replace(device_path.begin(), device_path.end(), ':', '_');
     return device_path;
 }
 
-DBusMessage* BluezAbstructLayer::m_send_dbus_message(DBusConnection* conn, const std::string& path, const std::string& interface, const std::string& method)
+DBusMessage* BluezDbusLayer::m_send_dbus_message(DBusConnection* conn, const std::string& path, const std::string& interface, const std::string& method)
 {
     DBusMessage* msg = dbus_message_new_method_call(BLUEZ_SERVICE.c_str(), path.c_str(), interface.c_str(), method.c_str());
     if (!msg)
@@ -161,7 +161,7 @@ DBusMessage* BluezAbstructLayer::m_send_dbus_message(DBusConnection* conn, const
     return reply;
 }
 
-std::vector<uint8_t> BluezAbstructLayer::parse_reply(DBusMessage* const reply)
+std::vector<uint8_t> BluezDbusLayer::parse_reply(DBusMessage* const reply)
 {
   std::vector<uint8_t> byte_data;
 
@@ -233,7 +233,7 @@ std::vector<uint8_t> BluezAbstructLayer::parse_reply(DBusMessage* const reply)
   return byte_data;
 }
 
-std::vector<uint8_t> BluezAbstructLayer::m_get_service_data(DBusMessageIter* const variant_iter)
+std::vector<uint8_t> BluezDbusLayer::m_get_service_data(DBusMessageIter* const variant_iter)
 {
   std::vector<uint8_t> byte_data;
   if (dbus_message_iter_get_arg_type(variant_iter) == DBUS_TYPE_ARRAY)
@@ -289,7 +289,7 @@ std::vector<uint8_t> BluezAbstructLayer::m_get_service_data(DBusMessageIter* con
   return byte_data;
 }
 
-std::vector<uint8_t> BluezAbstructLayer::m_get_variant_byte_array(DBusMessageIter* const variant_iter)
+std::vector<uint8_t> BluezDbusLayer::m_get_variant_byte_array(DBusMessageIter* const variant_iter)
 {
   std::vector<uint8_t> byte_data;
 
@@ -327,7 +327,7 @@ std::vector<uint8_t> BluezAbstructLayer::m_get_variant_byte_array(DBusMessageIte
 }
 
 
-void BluezAbstructLayer::m_print_byte_array(const std::vector<uint8_t>& data) {
+void BluezDbusLayer::m_print_byte_array(const std::vector<uint8_t>& data) {
     std::cout << "Data: ";
     for (uint8_t byte : data)
     {

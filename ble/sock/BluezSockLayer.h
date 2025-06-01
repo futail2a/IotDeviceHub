@@ -1,5 +1,5 @@
-#ifndef HCI_ABSTRUCT_LAYER_H
-#define HCI_ABSTRUCT_LAYER_H
+#ifndef Bluez_SOCK_LAYER_H
+#define Bluez_SOCK_LAYER_H
 
 #include <string>
 #include <vector>
@@ -13,11 +13,11 @@ constexpr uint8_t MAC_LENGTH = 6;
 constexpr uint8_t SERVICE_DATA_TYPE = 0x16;
 constexpr uint8_t SERVICE_DATA_INDEX = 4;
 
-class HciAbstructLayer : public BluetoothAbstructLayer
+class BluezSockLayer : public BluetoothAbstructLayer
 {
 public:
-    HciAbstructLayer();
-    ~HciAbstructLayer();
+    BluezSockLayer();
+    ~BluezSockLayer();
 
     bool init() override;
     void add_sensor_data_handler(std::shared_ptr<SensorDataHandler> sensorDataHandler) override;
