@@ -1,6 +1,6 @@
 #include "IotDeviceHubManager.h"
-#include "BluezDbusLayer.h"
-// #include "BluezSockLayer.h"
+// #include "BluezDbusLayer.h"
+#include "BluezSockLayer.h"
 #include <iostream>
 #include <unistd.h>
 
@@ -8,12 +8,12 @@ IotDeviceHubManager::IotDeviceHubManager(){}
 
 bool IotDeviceHubManager::init()
 {
-    m_bluetooth =std::make_unique<BluezDbusLayer>();
-    // m_bluetooth =std::make_unique<BluezSockLayer>();
+    // m_bluetooth =std::make_unique<BluezDbusLayer>();
+    m_bluetooth =std::make_unique<BluezSockLayer>();
 
-    m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
-    m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));
-    m_bluetooth->add_sensor_data_handler(m_th_sensor_data_handler);
+    // m_th_sensor_data_handler = std::make_shared<WoSensorTHDataHandler>();
+    // m_th_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_th_update, this, std::placeholders::_1));
+    // m_bluetooth->add_sensor_data_handler(m_th_sensor_data_handler);
 
     m_motion_sensor_data_handler = std::make_shared<MotionSensorDataHandler>();
     m_motion_sensor_data_handler->set_update_cb(std::bind(&IotDeviceHubManager::on_motion_update, this, std::placeholders::_1));
@@ -49,7 +49,7 @@ void IotDeviceHubManager::run()
   while(true)
   {
     m_bluetooth->check_adv_data();
-    sleep(1);
+    usleep(10000);//10ms
   }
 }
 

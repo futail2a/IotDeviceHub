@@ -24,6 +24,7 @@ public:
     bool start_scan() override;
     bool stop_scan() override;
     void check_adv_data() override;
+    void check_connectable();
 
 private:
     std::vector<std::pair<std::shared_ptr<SensorDataHandler>,std::string>> m_sensorDataHandlerMacPairs; // pari of handler and converted mac address

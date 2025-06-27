@@ -8,6 +8,7 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
+// #include <bluetooth/rfcomm.h>
 
 BluezSockLayer::BluezSockLayer()
 {
@@ -123,6 +124,7 @@ std::string BluezSockLayer::to_lower_mac(const uint8_t* addr) {
 
 void BluezSockLayer::check_adv_data()
 {
+    // check_connectable();
     uint8_t buf[HCI_MAX_EVENT_SIZE];
     int len = read(m_sock, buf, sizeof(buf));
     if (len < 0)
@@ -171,4 +173,26 @@ void BluezSockLayer::check_adv_data()
             }
         }
     }
+}
+
+void BluezSockLayer::check_connectable()
+{
+    bdaddr_t target_bdaddr;
+    str2ba("F0:9E:9E:9F:E7:C6", &target_bdaddr);
+    uint16_t handle;
+    struct hci_conn_info_req *cr = (struct hci_conn_info_req*)malloc(sizeof(struct hci_conn_info_req) + sizeof(struct hci_conn_info));
+    bacpy(&cr->bdaddr, &target_bdaddr);
+    cr->type = ACL_LINK;
+    int ret = ioctl(m_sock, HCIGETCONNINFO, (unsigned long)cr);
+    handle = cr->conn_info->handle;
+    if (ret == 0) {
+        uint16_t handle = cr->conn_info->handle;
+        std::cout << "接続に成功しました。handle: " << handle << std::endl;
+    } else {
+        std::cerr << "接続に失敗しました: " << strerror(errno) << std::endl;
+    }
+    free(cr);
+
+// hci_disconnect(sock, handle, HCI_OE_USER_ENDED_CONNECTION, 10000);
+
 }
