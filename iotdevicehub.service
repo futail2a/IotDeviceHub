@@ -1,0 +1,12 @@
+[Unit]
+Description=IoT Device Hub application
+After=bluetooth
+Requires=bluetooth
+
+[Service]
+Type=simple
+Restart = always
+ExecStart=/usr/local/bin/IotDeviceHub
+
+[Install]
+WantedBy=multi-user.target

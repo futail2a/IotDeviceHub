@@ -1,12 +1,14 @@
-#include "BluetoothAbstructLayer.h"
-#include "WoSensorTHDataHandler.h"
-#include "MotionSensorDataHandler.h"
-#include "SensorDataHandler.h"
-#include "MqttManager.h"
+#include "BleAbstructLayer.h"
+#include "WoMotionSensorHandler.h"
+#include "WoBulbHandler.h"
+// #include "MqttManager.h"
+#include "IotEventManager.h"
+
 #include <iostream>
 #include <iomanip>
 #include <memory>
 #include <vector>
+#include <atomic>
 
 class IotDeviceHubManager
 {
@@ -17,14 +19,18 @@ public:
     bool init();
     void run();
     void stop();
+    void terminate();
     void notify(const std::vector<uint8_t>& data);
 
 private:
-    std::shared_ptr<SensorDataHandler> m_th_sensor_data_handler;
-    std::shared_ptr<SensorDataHandler> m_motion_sensor_data_handler;
-    std::unique_ptr<BluetoothAbstructLayer> m_bluetooth;
-    std::unique_ptr<MqttManager> m_mqtt;
+    std::unique_ptr<BleAbstructLayer> mBle;
+    // std::unique_ptr<MqttManager> mMqtt;
+    std::shared_ptr<IotEventManager> mEventManager;
 
-    void on_th_update(std::vector<uint8_t> data);
-    void on_motion_update(std::vector<uint8_t> data);
+    // std::shared_ptr<SensorDataHandler> m_th_sensor_data_handler;
+    std::shared_ptr<WoMotionSensorHandler> mMotionSensorDevice;
+    std::shared_ptr<WoBulbHandler> mBulbDevice;
+    std::atomic<bool> isRunning{true};
+
+    void onMotionUpdate(std::vector<uint8_t> data);
 };

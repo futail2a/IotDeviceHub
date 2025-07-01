@@ -1,4 +1,4 @@
-#include "MotionSensorDataHandler.h"
+#include "WoMotionSensorHandler.h"
 #include "MqttTopicList.h"
 #include <iostream>
 #include <iomanip>
@@ -7,27 +7,51 @@ constexpr uint8_t SERVICEDATA_LEN = 6;
 constexpr uint8_t BIT_7_MASK = 0x80;
 constexpr uint8_t BIT_1_0_MASK = 0x03;
 
-void MotionSensorDataHandler::update(std::vector<uint8_t> &data)
+
+BleDeviceState WoMotionSensorHandler::getState()
 {
-    m_update_cb(data);
+  std::lock_guard<std::mutex> lock(mConnStatusMtx);
+  return mState;
+}
+void WoMotionSensorHandler::setState(const BleDeviceState state)
+{
+    std::lock_guard<std::mutex> lock(mConnStatusMtx);
+    mState = state;
 }
 
-void MotionSensorDataHandler::m_print_sensor_data(const std::vector<uint8_t>& data)
+void WoMotionSensorHandler::onAdvPacketRecived(const std::vector<uint8_t> &data)
 {
-  if(data.size() > SERVICEDATA_LEN)
-  {
-    std::cerr << "Service Data length is longer than " << SERVICEDATA_LEN << "bytes" << std::endl;
-    return;
-  }
+    if (data.size() < SERVICEDATA_LEN)
+    {
+        std::cerr << "Received data is too short: " << data.size() << " bytes, expected at least " << SERVICEDATA_LEN << " bytes." << std::endl;
+        return;
+    }
 
-  uint8_t pir_time = data[5]&BIT_7_MASK;
-  std::cout << "pir_time: " << std::to_string((int)pir_time) << std::endl;
+    static uint16_t last_pir=0U;
+    uint16_t pir_time = (static_cast<uint16_t>(data[3]) << 8) | static_cast<uint16_t>(data[4]);
 
-  uint8_t light_intensity = data[5]&BIT_1_0_MASK;
-  std::cout << "light_intensity: " << std::to_string((int)light_intensity) << std::endl;
+    // Check if the PIR time has changes
+    if(pir_time < last_pir)
+    {
+        std::cout<< "Since the last trigger PIR time (s): " + std::to_string(pir_time) <<std::endl;
+        mUpdateCb(data);
+    }
+    last_pir = pir_time;
+
+    bool someoneMoving = (data[1] & 0x40) != 0;
+
+    // if (someoneMoving)
+    // {
+    //   std::cout << "Someone is moving" << std::endl;
+    //   mUpdateCb(data);
+    // }
+    // else
+    // {
+    //   std::cout << "No one moves\n" << std::endl;;
+    // }
 }
 
-std::vector<MqttMessage> MotionSensorDataHandler::createPublishMessages(const std::vector<uint8_t>& data)
+std::vector<MqttMessage> WoMotionSensorHandler::createPublishMessages(const std::vector<uint8_t>& data)
 {
     static uint16_t last_pir=0U;
     static uint8_t last_light_intensity=0U;
@@ -82,4 +106,19 @@ std::vector<MqttMessage> MotionSensorDataHandler::createPublishMessages(const st
     }
 
     return messages;
+}
+
+void WoMotionSensorHandler::m_print_sensor_data(const std::vector<uint8_t>& data)
+{
+  if(data.size() > SERVICEDATA_LEN)
+  {
+    std::cerr << "Service Data length is longer than " << SERVICEDATA_LEN << "bytes" << std::endl;
+    return;
+  }
+
+  uint8_t pir_time = data[5]&BIT_7_MASK;
+  std::cout << "pir_time: " << std::to_string((int)pir_time) << std::endl;
+
+  uint8_t light_intensity = data[5]&BIT_1_0_MASK;
+  std::cout << "light_intensity: " << std::to_string((int)light_intensity) << std::endl;
 }
