@@ -159,7 +159,7 @@ void BleSockScanManager::scanning()
         if (len < 0)
         {
             std::cerr << "Failed to read HCI event: " << strerror(errno) << std::endl;
-            return;
+            continue;
         }
 
         evt_le_meta_event* meta = (evt_le_meta_event*)(buf + (1 + HCI_EVENT_HDR_SIZE));

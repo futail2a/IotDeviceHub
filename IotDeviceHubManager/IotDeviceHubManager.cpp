@@ -9,7 +9,8 @@
 #include <iostream>
 #include <unistd.h>
 
-IotDeviceHubManager::IotDeviceHubManager(){}
+IotDeviceHubManager::IotDeviceHubManager()
+{}
 
 bool IotDeviceHubManager::init()
 {
@@ -78,26 +79,32 @@ void IotDeviceHubManager::terminate()
     mBle->terminate();
 }
 
-// void IotDeviceHubManager::on_th_update(std::vector<uint8_t> data)
-// {
-//     if (!data.empty())
-//     {
-//         std::vector<MqttMessage> messages = m_th_sensor_data_handler->createPublishMessages(data);
-//         for(auto message : messages)
-//         {
-//             m_mqtt->publishMessage(message.topic, message.message);
-//         }
-//     }
-// }
+void IotDeviceHubManager::onLightTimeout(Poco::Timer& timer)
+{
+    std::cout << "Light timer expired, turning off the light" << std::endl;
+    auto command = mBulbDevice->getTurnOffCommand();
+    mBle->sendBleCommand(command);
+    mLightTimer.reset();
+}
 
 void IotDeviceHubManager::onMotionUpdate(std::vector<uint8_t> data)
 {
-  std::cout << "Motion data received " <<std::endl;
+  std::cout << "Motion data received" <<std::endl;
+
   auto command = mBulbDevice->getTurnOnCommand();
   mBle->sendBleCommand(command);
-  sleep(10);
-  command = mBulbDevice->getTurnOffCommand();
-  mBle->sendBleCommand(command);
+
+  if(mLightTimer)
+  {
+    std::cout << "Detected motion again, extend light on timer" <<std::endl;
+    mLightTimer->stop();
+    mLightTimer->start(Poco::TimerCallback<IotDeviceHubManager>(*this, &IotDeviceHubManager::onLightTimeout));
+  }
+  else
+  {
+    mLightTimer = std::make_unique<Poco::Timer>(DEFAULT_LIGHT_INTERVAL, 0);
+    mLightTimer->start(Poco::TimerCallback<IotDeviceHubManager>(*this, &IotDeviceHubManager::onLightTimeout));
+  }
 
     // if (!data.empty())
     // {
@@ -114,3 +121,15 @@ void IotDeviceHubManager::onMotionUpdate(std::vector<uint8_t> data)
     //     }
     // }
 }
+
+// void IotDeviceHubManager::on_th_update(std::vector<uint8_t> data)
+// {
+//     if (!data.empty())
+//     {
+//         std::vector<MqttMessage> messages = m_th_sensor_data_handler->createPublishMessages(data);
+//         for(auto message : messages)
+//         {
+//             m_mqtt->publishMessage(message.topic, message.message);
+//         }
+//     }
+// }

@@ -10,6 +10,10 @@
 #include <vector>
 #include <atomic>
 
+#include "Poco/Timer.h"
+
+const long DEFAULT_LIGHT_INTERVAL = 10000; // 10 seconds
+
 class IotDeviceHubManager
 {
 public:
@@ -33,4 +37,7 @@ private:
     std::atomic<bool> isRunning{true};
 
     void onMotionUpdate(std::vector<uint8_t> data);
+
+    std::unique_ptr<Poco::Timer> mLightTimer;
+    void onLightTimeout(Poco::Timer& timer);
 };

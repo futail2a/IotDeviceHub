@@ -1,9 +1,9 @@
 CC  := g++
 
 CFLAGS := `pkg-config --cflags --libs dbus-1 libmosquitto `
-INCLUDES := -I./include -I./ble -I./IotDeviceHubManager -I./mqtt -I./devices
+INCLUDES := -I./include -I./ble -I./IotDeviceHubManager -I./mqtt -I./devices -I/usr/local/include/Poco
 CFLAGS += $(INCLUDES)
-LDFLAGS := -lbluetooth
+LDFLAGS := -lbluetooth -lPocoFoundation -Wl,-rpath,/usr/local/lib
 #CFLAGS += `pkg-config --cflags sdbus-c++`
 #LDFLAGS += `pkg-config --libs sdbus-c++`
 
