@@ -1,13 +1,16 @@
 #include "IotDeviceHubManager.h"
 
 #include "BleAbstructLayer.h"
-#include "BleSockScanManager.h"
+#include "BleDbusScanManager.h"
 #include "BleDbusConnectionManager.h"
 #include "WoMotionSensorHandler.h"
 #include "WoBulbHandler.h"
 
 #include <iostream>
 #include <unistd.h>
+#include <Poco/LocalDateTime.h>
+#include <Poco/DateTime.h>
+#include <Poco/Timezone.h>
 
 IotDeviceHubManager::IotDeviceHubManager()
 {}
@@ -15,7 +18,7 @@ IotDeviceHubManager::IotDeviceHubManager()
 bool IotDeviceHubManager::init()
 {
     mBle =std::make_unique<BleAbstructLayer>();
-    if(!mBle->init(std::make_unique<BleSockScanManager>(), std::make_unique<BleDbusConnectionManager>()))
+    if(!mBle->init(std::make_unique<BleDbusScanManager>(), std::make_unique<BleDbusConnectionManager>()))
     {
         std::cerr << "Failed to initialize Bluez" << std::endl;
         return false;
@@ -23,13 +26,13 @@ bool IotDeviceHubManager::init()
 
     mMotionSensorDevice = std::make_shared<WoMotionSensorHandler>();
     mMotionSensorDevice->setUpdateCb(std::bind(&IotDeviceHubManager::onMotionUpdate, this, std::placeholders::_1));
-    mBle->registerScannedDevice(mMotionSensorDevice);
+    // mBle->registerScannedDevice(mMotionSensorDevice);
 
     mBulbDevice = std::make_shared<WoBulbHandler>();
     mBle->registerConnectDevice(mBulbDevice);
 
     mEventManager = std::make_shared<IotEventManager>();
-    mMotionSensorDevice->setMediator(mEventManager);
+    // mMotionSensorDevice->setMediator(mEventManager);
     mBulbDevice->setMediator(mEventManager);
 
     // m_mqtt =std::make_unique<MqttManager>();
@@ -55,10 +58,42 @@ void IotDeviceHubManager::run()
         return;
     }
 
+    bool isLightOn = false;
+
     while(isRunning)
     {
       mBle->connectDevices();
-      sleep(1);
+
+      Poco::LocalDateTime now;
+      int hour = now.hour();
+      // std::cout << "Current time: " << now.hour() << ":" << now.minute() << std::endl;
+
+      if(hour >= 6 && hour < 22)
+      {
+          std::cerr << "day time" << std::endl;
+
+          if(!isLightOn && mBulbDevice->getState() == BleDeviceState::CONNECTED)
+          {
+              isLightOn = true;
+              std::cout << "Turning on the light" << std::endl;
+              auto command = mBulbDevice->getTurnOnCommand();
+              mBle->sendBleCommand(command);
+          }
+      }
+      else
+      {
+          std::cerr << "night time" << std::endl;
+
+          if(isLightOn && mBulbDevice->getState() == BleDeviceState::CONNECTED)
+          {
+              isLightOn = false;
+              std::cout << "Turning off the light" << std::endl;
+              auto command = mBulbDevice->getTurnOffCommand();
+              mBle->sendBleCommand(command);
+          }
+      }
+
+      sleep(60);
     }
 }
 
