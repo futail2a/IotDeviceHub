@@ -53,8 +53,14 @@ MqttManager::MqttManager()
         mBrokerIpv4 = config.getString("mqtt.brokerIpv4");
         std::cout << "MQTT broker address: " << mBrokerIpv4 << std::endl;
         mBrokerPort = config.getUInt16("mqtt.brokerPort");
-        std::cout << "MQTT broker address: " << mBrokerPort << std::endl;
+        std::cout << "MQTT broker port: " << mBrokerPort << std::endl;
 
+        mCaCertPath = config.getString("mqtt.caCert");
+        std::cout << "MQTT CA cert path: " << mCaCertPath << std::endl;
+        mClientCertPath = config.getString("mqtt.clientCert");
+        std::cout << "MQTT client cert path: " << mClientCertPath << std::endl;
+        mClientKeyPath = config.getString("mqtt.clientKey");
+        std::cout << "MQTT client key path: "<< mClientKeyPath << std::endl;
     }
     catch (Poco::Exception& ex)
     {
@@ -113,7 +119,7 @@ bool MqttManager::init(std::string client_id)
     mosquitto_message_v5_callback_set(m_mosq, on_message);
 
     // auto ret = mosquitto_tls_set(m_mosq, "/etc/mosquitto/ca_certificates/ca.crt", NULL, "client.crt",  "client.key", NULL);
-    auto ret = mosquitto_tls_set(m_mosq, "./cert/indigo/ca.crt", NULL, "./cert/indigo/client.crt",  "./cert/indigo/client.key", NULL);
+    auto ret = mosquitto_tls_set(m_mosq, mCaCertPath.c_str(), NULL, mClientCertPath.c_str(), mClientKeyPath.c_str(), NULL);
     if(ret != MOSQ_ERR_SUCCESS)
     {
         std::cerr << "Failed to setup TLS " << ret << std::endl;

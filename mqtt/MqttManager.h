@@ -30,6 +30,9 @@ private:
     std::shared_ptr<IotEventManager> mMediator;
 
     std::string mBrokerIpv4="127.0.0.1";
+    std::string mCaCertPath="";
+    std::string mClientCertPath="";
+    std::string mClientKeyPath="";
     std::uint16_t mBrokerPort=1883;
 };
 
