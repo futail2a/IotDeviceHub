@@ -1,0 +1,25 @@
+{
+  "devices":
+  {
+    "woBulb":
+    {
+      "mac": "00:00:00:00:00:00"
+    },
+    "woHand":
+    {
+      "mac": "00:00:00:00:00:00"
+    },
+    "woMotionSensor":
+    {
+      "mac": "00:00:00:00:00:00"
+    }
+  },
+  "mqtt":
+  {
+    "brokerIpv4": "127.0.0.1",
+    "brokerPort": 1883,
+    "caCert": "caCertPath",
+    "clientCert": "clientCertPath",
+    "clientKey": "keyPath"
+  }
+}

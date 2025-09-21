@@ -5,21 +5,83 @@
 #include <chrono>
 
 #include "mqtt_protocol.h"
+#include "Poco/Util/JSONConfiguration.h"
 
 void on_connect(struct mosquitto *mosq, void *obj, int rc, int flags, const mosquitto_property *props) {
     if (rc == 0) {
-        std::cout << "Connected successfully!" << std::endl;
+        std::cout << "Connected MQTT broker successfully!" << std::endl;
     } else {
         std::cerr << "Connection failed with code: " << rc << std::endl;
     }
 }
 
-void on_disconnect(struct mosquitto *mosq, void *obj, int rc, const mosquitto_property *props) {
+void on_disconnect(struct mosquitto *mosq, void *obj, int rc, const mosquitto_property *props)
+{
     std::cout << "Disconnected with code: " << rc << std::endl;
 }
 
-void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg, const mosquitto_property *props) {
-    std::cout << "Message received on topic " << msg->topic << ": " << (char *)msg->payload << std::endl;
+void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg, const mosquitto_property *props)
+{
+    if(msg == nullptr)
+    {
+        std::cerr << "Received null message" << std::endl;
+        return;
+    }
+
+    if(msg->payload == nullptr || msg->payloadlen == 0)
+    {
+        std::cout << "Received empty message on topic " << msg->topic << std::endl;
+    }
+    else
+    {
+        std::cout << "Message received on topic " << msg->topic << ": " << (char *)msg->payload << std::endl;
+    }
+
+    auto *manager = static_cast<MqttManager*>(obj);
+    if(manager)
+    {
+        manager->onMessageReceived(msg);
+    }
+
+}
+
+MqttManager::MqttManager()
+{
+    try
+    {
+        Poco::Util::JSONConfiguration config = Poco::Util::JSONConfiguration(CONFIG_FILE_PATH);
+        mBrokerIpv4 = config.getString("mqtt.brokerIpv4");
+        std::cout << "MQTT broker address: " << mBrokerIpv4 << std::endl;
+        mBrokerPort = config.getUInt16("mqtt.brokerPort");
+        std::cout << "MQTT broker address: " << mBrokerPort << std::endl;
+
+    }
+    catch (Poco::Exception& ex)
+    {
+        std::cerr << "Error: " << ex.displayText() << std::endl;
+    }
+
+}
+
+void MqttManager::onMessageReceived(const struct mosquitto_message *msg)
+{
+    if(mMediator)
+    {
+        std::string eventData="";
+        if(msg->payload == nullptr || msg->payloadlen == 0)
+        {
+            std::cerr << "Received empty message on topic " << msg->topic << std::endl;
+        }
+        else
+        {
+            eventData=std::string((char *)msg->payload, msg->payloadlen);
+        }
+        mMediator->onEvent(msg->topic, eventData);
+    }
+    else
+    {
+        std::cerr << "Mediator not set, cannot handle message on topic " << msg->topic << std::endl;
+    }
 }
 
 bool MqttManager::init(std::string client_id)
@@ -33,7 +95,7 @@ bool MqttManager::init(std::string client_id)
         }
     }
 
-    m_mosq = mosquitto_new(client_id.c_str(), true, NULL);
+    m_mosq = mosquitto_new(client_id.c_str(), true, this);
     if (!m_mosq)
     {
         std::cerr << "Failed to create mosquitto instance" << std::endl;
@@ -50,7 +112,8 @@ bool MqttManager::init(std::string client_id)
     mosquitto_disconnect_v5_callback_set(m_mosq, on_disconnect);
     mosquitto_message_v5_callback_set(m_mosq, on_message);
 
-    auto ret = mosquitto_tls_set(m_mosq, "/etc/mosquitto/ca_certificates/ca.crt", NULL, "client.crt",  "client.key", NULL);
+    // auto ret = mosquitto_tls_set(m_mosq, "/etc/mosquitto/ca_certificates/ca.crt", NULL, "client.crt",  "client.key", NULL);
+    auto ret = mosquitto_tls_set(m_mosq, "./cert/indigo/ca.crt", NULL, "./cert/indigo/client.crt",  "./cert/indigo/client.key", NULL);
     if(ret != MOSQ_ERR_SUCCESS)
     {
         std::cerr << "Failed to setup TLS " << ret << std::endl;
@@ -58,7 +121,7 @@ bool MqttManager::init(std::string client_id)
 
     mosquitto_tls_insecure_set(m_mosq,true);
 
-    ret = mosquitto_connect_bind_v5(m_mosq, "127.0.0.1", MQTT_PORT, 60, nullptr, nullptr);
+    ret = mosquitto_connect_bind_v5(m_mosq, mBrokerIpv4.c_str(), mBrokerPort, 60, nullptr, nullptr);
     if(ret != MOSQ_ERR_SUCCESS)
     {
         std::cerr << "Failed to connect to broker: " << ret <<std::endl;
