@@ -7,8 +7,6 @@
 #include <mosquitto.h>
 #include "IotEventManager.h"
 
-const std::string CONFIG_FILE_PATH = "config/config.json";
-
 class MqttManager
 {
 public:

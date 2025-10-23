@@ -16,7 +16,6 @@ const std::string BLUEZ_ADAPTER = "org.bluez.Adapter1";
 const std::string BLUEZ_DEVICE = "org.bluez.Device1";
 const std::string GATT_CHAR_1 = "org.bluez.GattCharacteristic1";
 const std::string BLUEZ_SERVICE = "org.bluez";
-// const std::string DBUS_PROPERTIES = "org.freedesktop.DBus.Properties";
 const std::string METHOD_CONNECT = "Connect";
 
 struct DBusConnectionDeleter

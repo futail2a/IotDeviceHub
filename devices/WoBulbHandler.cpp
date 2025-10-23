@@ -1,5 +1,27 @@
 #include "WoBulbHandler.h"
 #include <iostream>
+#include <filesystem>
+#include "Poco/Util/JSONConfiguration.h"
+
+WoBulbHandler::WoBulbHandler()
+{
+    if(std::filesystem::is_regular_file(CONFIG_FILE_PATH))
+    {
+        Poco::Util::JSONConfiguration config = Poco::Util::JSONConfiguration(CONFIG_FILE_PATH);
+        try
+        {
+            mDevceMac = config.getString("devices.woBulb.mac");
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+    }
+    else
+    {
+        std::cerr << "Config file not found: " << CONFIG_FILE_PATH << std::endl;
+    }
+}
 
 BleDeviceState WoBulbHandler::getState()
 {

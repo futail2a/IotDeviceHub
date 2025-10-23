@@ -7,7 +7,7 @@
 class WoHandHandler : public BleDeviceHandler
 {
 public:
-    WoHandHandler() = default;
+    WoHandHandler();
     ~WoHandHandler() = default;
 
     std::string getMacAddr() const override  { return mDevceMac; };
@@ -23,7 +23,7 @@ public:
     BleCommand getExecActionCommand() const;
 
 private:
-    const std::string mDevceMac = "C1:56:82:D9:A9:DA";
+    std::string mDevceMac = "";
     const std::string mExecActionPath = "/service0011/char0015"; // org/bluez/hci0/dev_C1_56_82_D9_A9_DA/service0011/char0015
     const std::vector<uint8_t> mExecActionBytes  {0x57, 0x01, 0x00};
     BleDeviceState mState = BleDeviceState::DISCONNECTED;

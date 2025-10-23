@@ -6,13 +6,15 @@ bool BleDbusScanManager::init()
     DBusError err;
     dbus_error_init(&err);
     mConn = std::unique_ptr<DBusConnection, DBusConnectionDeleter>(dbus_bus_get(DBUS_BUS_SYSTEM, &err), DBusConnectionDeleter());
-    if (!mConn) {
+    if (!mConn)
+    {
         std::cerr << "Failed to connect to DBus: " << err.message << std::endl;
         dbus_error_free(&err);
         return false;
     }
 
-    if (dbus_error_is_set(&err)) {
+    if (dbus_error_is_set(&err))
+    {
         std::cerr << "DBus Connection Error: " << err.message << std::endl;
         dbus_error_free(&err);
         return false;
@@ -44,11 +46,6 @@ void BleDbusScanManager::dbusLoop()
         std::cerr << "DBus connection not initialized" << std::endl;
         return;
     }
-
-    // while (isRunning)
-    // {
-    //     dbus_connection_read_write_dispatch(mConn.get(), 100);
-    // }
 }
 
 void BleDbusScanManager::setDevice(std::shared_ptr<BleDeviceHandler> device)

@@ -7,7 +7,7 @@
 class WoBulbHandler : public BleDeviceHandler
 {
 public:
-    WoBulbHandler() = default;
+    WoBulbHandler();
     ~WoBulbHandler() = default;
 
     std::string getMacAddr() const override  { return mDevceMac; };
@@ -24,7 +24,7 @@ public:
     BleCommand getTurnOffCommand() const;
 
 private:
-    const std::string mDevceMac = "F0:9E:9E:9F:E7:C6";
+    std::string mDevceMac = "";
     const std::string mTurnOffOnCharacteristicPath = "/service0028/char002c";
     const std::vector<uint8_t> mTurnOnBytes  {0x57, 0x0F, 0x47, 0x01, 0x01};
     const std::vector<uint8_t> mTurnOffBytes {0x57, 0x0F, 0x47, 0x01, 0x02};

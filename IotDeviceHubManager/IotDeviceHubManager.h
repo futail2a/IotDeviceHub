@@ -18,8 +18,8 @@ const long DEFAULT_LIGHT_INTERVAL = 10000; // 10 seconds
 class IotDeviceHubManager
 {
 public:
-    IotDeviceHubManager();
-    ~IotDeviceHubManager(){};
+    IotDeviceHubManager() = default;
+    ~IotDeviceHubManager() = default;
 
     bool init();
     void run();
@@ -32,7 +32,6 @@ private:
     std::unique_ptr<MqttManager> mMqtt;
     std::shared_ptr<IotEventManager> mEventManager;
 
-    // std::shared_ptr<SensorDataHandler> m_th_sensor_data_handler;
     std::shared_ptr<WoMotionSensorHandler> mMotionSensorDevice;
     std::shared_ptr<WoBulbHandler> mBulbDevice;
     std::shared_ptr<WoHandHandler> mBotDevice;

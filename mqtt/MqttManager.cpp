@@ -7,10 +7,14 @@
 #include "mqtt_protocol.h"
 #include "Poco/Util/JSONConfiguration.h"
 
-void on_connect(struct mosquitto *mosq, void *obj, int rc, int flags, const mosquitto_property *props) {
-    if (rc == 0) {
+void on_connect(struct mosquitto *mosq, void *obj, int rc, int flags, const mosquitto_property *props)
+{
+    if (rc == 0)
+    {
         std::cout << "Connected MQTT broker successfully!" << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "Connection failed with code: " << rc << std::endl;
     }
 }
@@ -110,15 +114,10 @@ bool MqttManager::init(std::string client_id)
 
     mosquitto_int_option(m_mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
 
-    // mosquitto_log_callback_set(m_mosq, [](struct mosquitto *mosq, void *userdata, int level, const char *str) {
-    //     std::cout << "Log: " << str << std::endl;
-    // });
-
     mosquitto_connect_v5_callback_set(m_mosq, on_connect);
     mosquitto_disconnect_v5_callback_set(m_mosq, on_disconnect);
     mosquitto_message_v5_callback_set(m_mosq, on_message);
 
-    // auto ret = mosquitto_tls_set(m_mosq, "/etc/mosquitto/ca_certificates/ca.crt", NULL, "client.crt",  "client.key", NULL);
     auto ret = mosquitto_tls_set(m_mosq, mCaCertPath.c_str(), NULL, mClientCertPath.c_str(), mClientKeyPath.c_str(), NULL);
     if(ret != MOSQ_ERR_SUCCESS)
     {
@@ -148,7 +147,8 @@ void MqttManager::deinit()
 void MqttManager::start()
 {
     int ret = mosquitto_loop_start(m_mosq);
-    if (ret != MOSQ_ERR_SUCCESS) {
+    if (ret != MOSQ_ERR_SUCCESS)
+    {
         std::cerr << "Error: failed to start mosquitto loop: " << ret << std::endl;
         mosquitto_disconnect_v5(m_mosq, MQTT_RC_UNSPECIFIED, nullptr);
         return;
@@ -163,17 +163,20 @@ void MqttManager::stop()
 
 bool MqttManager::publishMessage(const std::string topic, const std::string message, const int qos, const bool retain, const mosquitto_property *properties)
 {
-    if (!m_mosq) {
+    if (!m_mosq)
+    {
         std::cerr << "Mosquitto instance not initialized" << std::endl;
         return false;
     }
 
-    if (topic.empty()) {
+    if (topic.empty())
+    {
         std::cerr << "Topic is empty" << std::endl;
         return false;
     }
 
-    if (message.empty()) {
+    if (message.empty())
+    {
         std::cerr << "Message is empty" << std::endl;
         return false;
     }
@@ -184,7 +187,8 @@ bool MqttManager::publishMessage(const std::string topic, const std::string mess
     int messageId = 0;
     auto ret = mosquitto_publish_v5(m_mosq, &messageId, t, static_cast<int>(msize), m, qos, retain, properties);
 
-    if (ret != MOSQ_ERR_SUCCESS) {
+    if (ret != MOSQ_ERR_SUCCESS)
+    {
         std::cerr << "Error: failed to publish message: " << ret << std::endl;
         mosquitto_disconnect_v5(m_mosq, MQTT_RC_UNSPECIFIED, nullptr);
         return false;
@@ -197,12 +201,14 @@ bool MqttManager::publishMessage(const std::string topic, const std::string mess
 
 bool MqttManager::subscribe(const std::string topic, const int qos, const int options, const mosquitto_property *properties)
 {
-    if (!m_mosq) {
+    if (!m_mosq)
+    {
         std::cerr << "Mosquitto instance not initialized" << std::endl;
         return false;
     }
 
-    if (topic.empty()) {
+    if (topic.empty())
+    {
         std::cerr << "Topic is empty" << std::endl;
         return false;
     }

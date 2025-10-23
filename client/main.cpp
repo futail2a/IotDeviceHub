@@ -7,7 +7,8 @@
 int main() {
   MqttManager mqtt_manager;
 
-  if (!mqtt_manager.init("iot_device_client")) {
+  if (!mqtt_manager.init("iot_device_client"))
+  {
     std::cerr << "Failed to initialize MQTT manager" << std::endl;
     return -1;
   }
@@ -19,7 +20,8 @@ int main() {
   mqtt_manager.subscribe("iot_device_hub/sensor_data/entrance/pir_utc");
   mqtt_manager.subscribe("iot_device_hub/sensor_data/entrance/light_intensity");
 
-  while (true) {
+  while (true)
+  {
     sleep(1);
   }
   mqtt_manager.stop();

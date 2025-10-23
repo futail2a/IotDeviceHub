@@ -2,10 +2,32 @@
 #include "MqttTopicList.h"
 #include <iostream>
 #include <iomanip>
+#include <filesystem>
+#include "Poco/Util/JSONConfiguration.h"
 
 constexpr uint8_t SERVICEDATA_LEN = 6;
 constexpr uint8_t BIT_7_MASK = 0x80;
 constexpr uint8_t BIT_1_0_MASK = 0x03;
+
+WoMotionSensorHandler::WoMotionSensorHandler()
+{
+    if(std::filesystem::is_regular_file(CONFIG_FILE_PATH))
+    {
+        Poco::Util::JSONConfiguration config = Poco::Util::JSONConfiguration(CONFIG_FILE_PATH);
+        try
+        {
+            mDevceMac = config.getString("devices.woMotionSensor.mac");
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+    }
+    else
+    {
+        std::cerr << "Config file not found: " << CONFIG_FILE_PATH << std::endl;
+    }
+}
 
 
 BleDeviceState WoMotionSensorHandler::getState()
@@ -40,15 +62,15 @@ void WoMotionSensorHandler::onAdvPacketRecived(const std::vector<uint8_t> &data)
 
     bool someoneMoving = (data[1] & 0x40) != 0;
 
-    // if (someoneMoving)
-    // {
-    //   std::cout << "Someone is moving" << std::endl;
-    //   mUpdateCb(data);
-    // }
-    // else
-    // {
-    //   std::cout << "No one moves\n" << std::endl;;
-    // }
+    if (someoneMoving)
+    {
+      std::cout << "Someone is moving" << std::endl;
+      mUpdateCb(data);
+    }
+    else
+    {
+      std::cout << "No one moves\n" << std::endl;;
+    }
 }
 
 std::vector<MqttMessage> WoMotionSensorHandler::createPublishMessages(const std::vector<uint8_t>& data)

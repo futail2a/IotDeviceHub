@@ -10,6 +10,8 @@
 #include <mutex>
 #include <memory>
 
+using UpdateCb = std::function <void(std::vector<uint8_t>)>;
+
 // Todo, separeate this to a different file
 struct MqttMessage
 {
@@ -20,12 +22,10 @@ struct MqttMessage
     mosquitto_property* properties=nullptr;
 };
 
-using UpdateCb = std::function <void(std::vector<uint8_t>)>;
-
 class WoMotionSensorHandler : public BleDeviceHandler
 {
 public:
-    WoMotionSensorHandler() = default;
+    WoMotionSensorHandler();
     ~WoMotionSensorHandler() = default;
 
     std::string getMacAddr() const override { return mDevceMac; };
@@ -47,9 +47,7 @@ private:
   BleDeviceState mState = BleDeviceState::DISCONNECTED;
   std::mutex mConnStatusMtx;
 
-  // Hardcord the MAC address of the device to be found
-  // TODO: To find target adv data by service UUID
-  const std::string mDevceMac = "B0:E9:FE:55:04:12";
+  std::string mDevceMac = "";
   std::shared_ptr<IotEventManager> mMediator;
 };
 

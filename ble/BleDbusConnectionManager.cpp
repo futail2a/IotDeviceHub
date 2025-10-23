@@ -146,39 +146,6 @@ void BleDbusConnectionManager::connect()
 
         dbus_message_append_args(msg, DBUS_TYPE_INVALID);
 
-        // Ref. Blocking request for connection
-        // DBusError err;
-        // dbus_error_init(&err);
-        // DBusMessage* reply = dbus_connection_send_with_reply_and_block(mConn.get(), msg, 5000, &err);
-        // if (dbus_error_is_set(&err))
-        // {
-        //     std::cerr << "Connection Error: " << err.message << std::endl;
-        //     dbus_error_free(&err);
-        //       return;
-        // }
-
-        // if (reply)
-        // {
-        //     if (dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_METHOD_RETURN)
-        //     {
-        //         std::cout << "Blocking connect: METHOD_RETURN received for " << handler.first->getMacAddr() << std::endl;
-        //         handler.first->setState(BleDeviceState::CONNECTED);
-        //         handler.first->onConnected();
-        //     }
-        //     else if (dbus_message_get_type(reply) == DBUS_MESSAGE_TYPE_ERROR)
-        //     {
-        //         std::cerr << "Blocking connect: ERROR received for " << handler.first->getMacAddr() << ", error name: " << dbus_message_get_error_name(reply) << std::endl;
-        //         handler.first->setState(BleDeviceState::DISCONNECTED);
-        //     }
-        //     dbus_message_unref(reply);
-        // }
-        // else
-        // {
-        //     std::cerr << "Blocking connect: No reply received for connection attempt to " << handler.second << std::endl;
-        //     handler.first->setState(BleDeviceState::DISCONNECTED);
-        // }
-        // dbus_message_unref(msg);
-
         DBusPendingCall* pending = nullptr;
         if (!dbus_connection_send_with_reply(mConn.get(), msg, &pending, -1))
         {
@@ -201,7 +168,6 @@ void BleDbusConnectionManager::connect()
         dbus_pending_call_set_notify(pending, &BleDbusConnectionManager::connectionCb, new std::shared_ptr<BleDeviceHandler>(handler.first),
             [](void* data) { delete static_cast<std::shared_ptr<BleDeviceHandler>*>(data); });
         dbus_message_unref(msg);
-        // dbus_connection_read_write_dispatch(mConn.get(), -1);
 
         continue;
     }
@@ -223,7 +189,7 @@ DBusHandlerResult BleDbusConnectionManager::propertiesChangedCb(DBusConnection* 
             return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
         }
 
-        dbus_message_iter_next(&args); // move to changed properties
+        dbus_message_iter_next(&args);
         DBusMessageIter dictIter;
         dbus_message_iter_recurse(&args, &dictIter);
 
@@ -245,7 +211,6 @@ DBusHandlerResult BleDbusConnectionManager::propertiesChangedCb(DBusConnection* 
                 dbus_message_iter_get_basic(&variantIter, &connected);
 
                 auto handler = static_cast<std::shared_ptr<BleDeviceHandler>*>(user_data);
-                // auto* handler = static_cast<BleDeviceHandler*>(user_data);
                 if (connected)
                 {
                     std::cout << "Device " << (*handler)->getMacAddr() << " is connected" << std::endl;

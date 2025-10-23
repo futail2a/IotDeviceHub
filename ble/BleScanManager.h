@@ -3,7 +3,6 @@
 
 #include "BleDeviceHandler.h"
 
-//TODO change name to BlePacketSniffer
 class BleScanManager
 {
 public:

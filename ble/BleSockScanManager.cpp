@@ -175,10 +175,12 @@ void BleSockScanManager::scanning()
 
         for(auto handler : mBleDeviceHandlerMacPairs)
         {
-            if (mac == handler.second) {
+            if (mac == handler.second)
+            {
                 // std::cout << "Found MAC: " << mac << std::endl;
                 int i = 0;
-                while (i < info->length) {
+                while (i < info->length)
+                {
                     uint8_t field_len = info->data[i];
                     if (field_len == 0 || i + field_len >= info->length)
                     {
@@ -188,15 +190,6 @@ void BleSockScanManager::scanning()
                     uint8_t ad_type = info->data[i + 1];
                     if (ad_type == SERVICE_DATA_TYPE)
                     {
-                        // Printing received service data
-                        // std::cout << "Service Data: ";
-                        // for (int j = i+SERVICE_DATA_INDEX; j < i+field_len+1; ++j)
-                        // {
-                        //     std::cout << std::hex << std::setfill('0') << std::setw(2)
-                        //                 << static_cast<int>(info->data[j]) << " ";
-                        // }
-                        // std::cout << std::dec << std::endl;
-
                         std::vector<uint8_t> service_data(info->data + i + SERVICE_DATA_INDEX, info->data+i+field_len+1);
                         handler.first->onAdvPacketRecived(service_data);
                         break;
