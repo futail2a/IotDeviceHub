@@ -1,0 +1,28 @@
+# Third-Party Licenses
+
+This software uses the following open-source libraries:
+
+---
+
+## POCO C++ Libraries
+License: Boost Software License, Version 1.0
+Project: https://pocoproject.org/
+
+---
+
+## BlueZ
+License: GNU General Public License (GPL) version 2 or
+         GNU Lesser General Public License (LGPL) version 2.1
+Project: https://www.bluez.org/
+
+---
+
+## D-Bus (libdbus)
+License: Academic Free License 2.1 OR GNU General Public License version 2
+Project: https://www.freedesktop.org/wiki/Software/dbus/
+
+---
+
+## Eclipse Mosquitto
+License: Eclipse Public License 2.0 and Eclipse Distribution License 1.0
+Project: https://mosquitto.org/
