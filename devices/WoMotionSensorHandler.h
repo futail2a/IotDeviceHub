@@ -25,7 +25,7 @@ struct MqttMessage
 class WoMotionSensorHandler : public BleDeviceHandler
 {
 public:
-    WoMotionSensorHandler();
+    WoMotionSensorHandler(const std::string mac): mDevceMac(mac) {};
     ~WoMotionSensorHandler() = default;
 
     std::string getMacAddr() const override { return mDevceMac; };
@@ -34,8 +34,8 @@ public:
     void setMediator(std::shared_ptr<IotEventManager> manager) override { mMediator = manager; }
 
     void onAdvPacketRecived(const std::vector<uint8_t> &data) override;
-    void onConnected() override {};// nothing to do
-    void onDisconnected() override {};// nothing to do
+    void onConnected() override;
+    void onDisconnected() override;
     void subscribeEvent() override {};// nothing to do
 
     void setUpdateCb(UpdateCb cb) { mUpdateCb = cb; }
@@ -43,7 +43,7 @@ public:
 
 private:
   void m_print_sensor_data(const std::vector<uint8_t>& data);
-  UpdateCb mUpdateCb;
+  UpdateCb mUpdateCb = nullptr;
   BleDeviceState mState = BleDeviceState::DISCONNECTED;
   std::mutex mConnStatusMtx;
 

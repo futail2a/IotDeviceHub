@@ -46,6 +46,11 @@ void BleDbusScanManager::dbusLoop()
         std::cerr << "DBus connection not initialized" << std::endl;
         return;
     }
+
+    while (isRunning)
+    {
+        dbus_connection_read_write_dispatch(mConn.get(), 100);
+    }
 }
 
 void BleDbusScanManager::setDevice(std::shared_ptr<BleDeviceHandler> device)

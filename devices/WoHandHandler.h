@@ -7,7 +7,7 @@
 class WoHandHandler : public BleDeviceHandler
 {
 public:
-    WoHandHandler();
+    WoHandHandler(const std::string mac) : mDevceMac(mac) {};
     ~WoHandHandler() = default;
 
     std::string getMacAddr() const override  { return mDevceMac; };
@@ -18,7 +18,7 @@ public:
     void onAdvPacketRecived(const std::vector<uint8_t> &data) override;
     void onConnected() override;
     void onDisconnected() override;
-    void subscribeEvent() override;
+    void subscribeEvent() override {};// nothing to do
 
     BleCommand getExecActionCommand() const;
 
