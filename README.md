@@ -1,6 +1,8 @@
 # IoT Device Hub
 これはIoT機器のハブとして様々なビジネスロジックを追加できるアプリケーションです。
+
 IoT Decice Hubは周囲のIoT機器にBLE経由でセンサデータを取得したりコマンドを送信することができます。
+
 また、MQTT経由で外部のアプリケーションからコマンドを送ることも可能です。
 
 
@@ -40,26 +42,36 @@ IoT Decice Hubは周囲のIoT機器にBLE経由でセンサデータを取得し
   {
     "brokerIpv4": "127.0.0.1",
     "brokerPort": 1883,
-    "caCert": "caCertPath",
-    "clientCert": "clientCertPath",
-    "clientKey": "keyPath"
+    "caCert": "",
+    "clientCert": "",
+    "clientKey": ""
   }
 ```
 
 3. ビルドとインストール
-* 最上位のディレクトリで以下のmakeコマンドを実行し、ビルドします。
-```$ make```
+* 一番上のディレクトリで以下のmakeコマンドを実行し、ビルドします。
+```
+$ make
+```
 * ビルドが成功したら以下のコマンドでこのアプリケーションをiotdevicehubサービスとしてインストールすることができます。
-```$ make install```
+```
+$ make install
+```
 * アンインストールする場合は以下のコマンドを実行します。
-```$ make uninstall```
+```
+$ make uninstall
+```
 
-4. 実行
+4. 実行とサンプルコマンド
 * ビルドしてできたバイナリIotDeviceHubを実行するか、インストール後に以下を実行してサービスを起動するとアプリケーションが立ち上がります。
 ```
+$ ./IotDeviceHub
+#OR
 $ systemctl daemon-reload
 $ systemctl start iotdevicehub
 ```
+
+その後設定したMQTTブローカーに対して"exec_bot"という名前のトピックをPUBLISHすると、SwitchBotボットに接続されている場合はスイッチ動作をします。
 
 ## 対象機器
 * SwitchBot
@@ -68,6 +80,10 @@ $ systemctl start iotdevicehub
     * 人感センサー
 
 もしBLE機器を追加したい場合はdevices/ディレクトリにあるBleDeviceHandler.cppにあるBleDeviceHandlerクラスを継承して独自の機器を追加することができます。
+
+## 既知の問題
+* アドバタイズパケットの読み込みとBLE接続後で利用できる機能の併用ができない
+    * BleSockScanManagerとBleDbusConnectionManagerの併用ができず、またBleSockScanManageのアドバタイズパケットのパースが未完了のため
 
 ## 参考
 https://github.com/OpenWonderLabs/SwitchBotAPI-BLE/tree/latest
