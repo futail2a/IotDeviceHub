@@ -37,6 +37,7 @@ private:
     std::shared_ptr<WoHandHandler> mBotDevice;
     std::atomic<bool> isRunning{true};
 
+    void getConfigurationParameters();
     void onMotionUpdate(std::vector<uint8_t> data);
 
     std::unique_ptr<Poco::Timer> mLightTimer;

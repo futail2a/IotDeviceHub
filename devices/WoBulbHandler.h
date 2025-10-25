@@ -7,7 +7,7 @@
 class WoBulbHandler : public BleDeviceHandler
 {
 public:
-    WoBulbHandler();
+    WoBulbHandler(const std::string mac) : mDevceMac(mac) {};
     ~WoBulbHandler() = default;
 
     std::string getMacAddr() const override  { return mDevceMac; };

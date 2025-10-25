@@ -49,30 +49,6 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 
 }
 
-MqttManager::MqttManager()
-{
-    try
-    {
-        Poco::Util::JSONConfiguration config = Poco::Util::JSONConfiguration(CONFIG_FILE_PATH);
-        mBrokerIpv4 = config.getString("mqtt.brokerIpv4");
-        std::cout << "MQTT broker address: " << mBrokerIpv4 << std::endl;
-        mBrokerPort = config.getUInt16("mqtt.brokerPort");
-        std::cout << "MQTT broker port: " << mBrokerPort << std::endl;
-
-        mCaCertPath = config.getString("mqtt.caCert");
-        std::cout << "MQTT CA cert path: " << mCaCertPath << std::endl;
-        mClientCertPath = config.getString("mqtt.clientCert");
-        std::cout << "MQTT client cert path: " << mClientCertPath << std::endl;
-        mClientKeyPath = config.getString("mqtt.clientKey");
-        std::cout << "MQTT client key path: "<< mClientKeyPath << std::endl;
-    }
-    catch (Poco::Exception& ex)
-    {
-        std::cerr << "Error: " << ex.displayText() << std::endl;
-    }
-
-}
-
 void MqttManager::onMessageReceived(const struct mosquitto_message *msg)
 {
     if(mMediator)
@@ -97,7 +73,7 @@ void MqttManager::onMessageReceived(const struct mosquitto_message *msg)
 bool MqttManager::init(std::string client_id)
 {
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard<std::mutex> lock(mMutex);
         if(mosquitto_lib_init()!=MOSQ_ERR_SUCCESS)
         {
             std::cerr << "Failed to initialize mosquitto library" << std::endl;
@@ -105,31 +81,43 @@ bool MqttManager::init(std::string client_id)
         }
     }
 
-    m_mosq = mosquitto_new(client_id.c_str(), true, this);
-    if (!m_mosq)
+    mMosq = mosquitto_new(client_id.c_str(), true, this);
+    if (!mMosq)
     {
         std::cerr << "Failed to create mosquitto instance" << std::endl;
         return false;
     }
 
-    mosquitto_int_option(m_mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
+    mosquitto_int_option(mMosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
 
-    mosquitto_connect_v5_callback_set(m_mosq, on_connect);
-    mosquitto_disconnect_v5_callback_set(m_mosq, on_disconnect);
-    mosquitto_message_v5_callback_set(m_mosq, on_message);
+    mosquitto_connect_v5_callback_set(mMosq, on_connect);
+    mosquitto_disconnect_v5_callback_set(mMosq, on_disconnect);
+    mosquitto_message_v5_callback_set(mMosq, on_message);
 
-    auto ret = mosquitto_tls_set(m_mosq, mCaCertPath.c_str(), NULL, mClientCertPath.c_str(), mClientKeyPath.c_str(), NULL);
-    if(ret != MOSQ_ERR_SUCCESS)
+    if(!mCaCertPath.empty())
     {
-        std::cerr << "Failed to setup TLS " << ret << std::endl;
+        const char *cafile = mCaCertPath.c_str();
+        const char *capath = nullptr;
+        const char *certfile = mClientCertPath.empty() ? nullptr : mClientCertPath.c_str();
+        const char *keyfile = mClientKeyPath.empty() ? nullptr : mClientKeyPath.c_str();
+
+        auto ret = mosquitto_tls_set(mMosq, cafile, capath, certfile, keyfile, nullptr);
+        if(ret != MOSQ_ERR_SUCCESS)
+        {
+            std::cerr << "Failed to setup TLS: " << mosquitto_strerror(ret) << " (" << ret << ")" << std::endl;
+            mosquitto_destroy(mMosq);
+            mMosq = nullptr;
+            return false;
+        }
     }
 
-    mosquitto_tls_insecure_set(m_mosq,true);
+    bool tls_insecure = true;
+    mosquitto_tls_insecure_set(mMosq, tls_insecure);
 
-    ret = mosquitto_connect_bind_v5(m_mosq, mBrokerIpv4.c_str(), mBrokerPort, 60, nullptr, nullptr);
+    int ret = mosquitto_connect_bind_v5(mMosq, mBrokerIpv4.c_str(), mBrokerPort, 60, nullptr, nullptr);
     if(ret != MOSQ_ERR_SUCCESS)
     {
-        std::cerr << "Failed to connect to broker: " << ret <<std::endl;
+        std::cerr << "Failed to connect to broker: " << mosquitto_strerror(ret) << " (" << ret << ")" << std::endl;
         return false;
     }
 
@@ -140,30 +128,30 @@ bool MqttManager::init(std::string client_id)
 
 void MqttManager::deinit()
 {
-    mosquitto_destroy(m_mosq);
+    mosquitto_destroy(mMosq);
     mosquitto_lib_cleanup();
 }
 
 void MqttManager::start()
 {
-    int ret = mosquitto_loop_start(m_mosq);
+    int ret = mosquitto_loop_start(mMosq);
     if (ret != MOSQ_ERR_SUCCESS)
     {
         std::cerr << "Error: failed to start mosquitto loop: " << ret << std::endl;
-        mosquitto_disconnect_v5(m_mosq, MQTT_RC_UNSPECIFIED, nullptr);
+        mosquitto_disconnect_v5(mMosq, MQTT_RC_UNSPECIFIED, nullptr);
         return;
     }
 }
 
 void MqttManager::stop()
 {
-    mosquitto_loop_stop(m_mosq, true);
-    mosquitto_disconnect_v5(m_mosq, MQTT_RC_NORMAL_DISCONNECTION, nullptr);
+    mosquitto_loop_stop(mMosq, true);
+    mosquitto_disconnect_v5(mMosq, MQTT_RC_NORMAL_DISCONNECTION, nullptr);
 }
 
 bool MqttManager::publishMessage(const std::string topic, const std::string message, const int qos, const bool retain, const mosquitto_property *properties)
 {
-    if (!m_mosq)
+    if (!mMosq)
     {
         std::cerr << "Mosquitto instance not initialized" << std::endl;
         return false;
@@ -185,12 +173,12 @@ bool MqttManager::publishMessage(const std::string topic, const std::string mess
     const char *m = message.c_str();
     size_t msize = message.size();
     int messageId = 0;
-    auto ret = mosquitto_publish_v5(m_mosq, &messageId, t, static_cast<int>(msize), m, qos, retain, properties);
+    auto ret = mosquitto_publish_v5(mMosq, &messageId, t, static_cast<int>(msize), m, qos, retain, properties);
 
     if (ret != MOSQ_ERR_SUCCESS)
     {
         std::cerr << "Error: failed to publish message: " << ret << std::endl;
-        mosquitto_disconnect_v5(m_mosq, MQTT_RC_UNSPECIFIED, nullptr);
+        mosquitto_disconnect_v5(mMosq, MQTT_RC_UNSPECIFIED, nullptr);
         return false;
     }
     std::cout << "Message published to topic " << topic << std::endl;
@@ -201,7 +189,7 @@ bool MqttManager::publishMessage(const std::string topic, const std::string mess
 
 bool MqttManager::subscribe(const std::string topic, const int qos, const int options, const mosquitto_property *properties)
 {
-    if (!m_mosq)
+    if (!mMosq)
     {
         std::cerr << "Mosquitto instance not initialized" << std::endl;
         return false;
@@ -214,7 +202,7 @@ bool MqttManager::subscribe(const std::string topic, const int qos, const int op
     }
 
     int messageId = 0;
-    auto res = mosquitto_subscribe_v5(m_mosq, &messageId, topic.c_str(), qos, options, properties);
+    auto res = mosquitto_subscribe_v5(mMosq, &messageId, topic.c_str(), qos, options, properties);
     if(res != MOSQ_ERR_SUCCESS)
     {
         std::cerr << "Failed to subscribe to topic: " << topic << std::endl;

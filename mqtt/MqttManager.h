@@ -10,7 +10,18 @@
 class MqttManager
 {
 public:
-    MqttManager();
+    MqttManager(std::string brokerIpv4="127.0.0.1", std::uint16_t brokerPort=1883U,
+                std::string caCertPath="", std::string clientCertPath="", std::string clientKeyPath="")
+        : mMosq(nullptr),
+          mMutex(),
+          mMediator(nullptr),
+          mBrokerIpv4(brokerIpv4),
+          mBrokerPort(brokerPort),
+          mCaCertPath(caCertPath),
+          mClientCertPath(clientCertPath),
+          mClientKeyPath(clientKeyPath)
+    {};
+
     ~MqttManager() = default;
     bool init(std::string client_id);
     void deinit();
@@ -23,15 +34,16 @@ public:
     void onMessageReceived(const struct mosquitto_message *msg);
 
 private:
-    struct mosquitto* m_mosq;
-    std::mutex m_mutex;
+    struct mosquitto* mMosq;
+    std::mutex mMutex;
     std::shared_ptr<IotEventManager> mMediator;
 
-    std::string mBrokerIpv4="127.0.0.1";
-    std::string mCaCertPath="";
-    std::string mClientCertPath="";
-    std::string mClientKeyPath="";
-    std::uint16_t mBrokerPort=1883;
+    std::string mBrokerIpv4;
+    std::uint16_t mBrokerPort;
+    std::string mCaCertPath;
+    std::string mClientCertPath;
+    std::string mClientKeyPath;
+    std::string mTlsInsecure;
 };
 
 #endif

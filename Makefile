@@ -14,10 +14,6 @@ CLIENT_TARGET := IotDeviceClient
 CLIENT_SRCS   := $(shell find . -name '*.cpp' -not -path './IotDeviceHubManager/*' )
 CLIENT_SRCS += client/main.cpp
 
-BASE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-CONFIG_PATH := $(abspath $(MAKEFILE_DIR)/config/config.json)
-CFLAGS += -D'CONFIG_FILE_PATH="$(CONFIG_PATH)"'
-
 all: $(DEFAULT_TARGET)
 
 $(DEFAULT_TARGET): $(DEFAULT_SRCS)
@@ -32,3 +28,7 @@ install: $(DEFAULT_TARGET)
 
 clean:
 	-rm -f $(DEFAULT_TARGET) $(CLIENT_TARGET)
+
+uninstall:
+	-rm -f /usr/local/bin/$(DEFAULT_TARGET)
+	-rm -f /etc/systemd/system/iotdevicehub.service
