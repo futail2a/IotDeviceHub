@@ -19,7 +19,7 @@ $make run-test
 * Generate coverage report
 ```
 $lcov -d . -c -o coverage.info
-$lcov -r coverage.info */googletest/* test/* */c++/* -o coverageFiltered.info
+$lcov -r coverage.info */googletest/* */tests/* */c++/* -o coverageFiltered.info
 $genhtml -o lcovHtml --num-spaces 4 -s --legend coverageFiltered.info
 ```
 
