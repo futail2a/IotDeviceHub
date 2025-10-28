@@ -11,11 +11,12 @@ set(TEST_SOURCES
 )
 
 file(GLOB TAEGET_SOURCE
-  ${PROJECT_SOURCE_DIR}/devices/WoBulbHandler.cpp
-  ${PROJECT_SOURCE_DIR}/IotDeviceHubManager/IotEventManager.cpp
+  ${PROJECT_SOURCE_DIR}/src/devices/WoBulbHandler.cpp
+  ${PROJECT_SOURCE_DIR}/src/IotDeviceHubManager/IotEventManager.cpp
 )
 
 find_package(Threads REQUIRED)
+find_package(Poco REQUIRED Foundation JSON Util)
 
 add_executable(unit_tests ${TEST_SOURCES})
 
@@ -30,8 +31,8 @@ target_include_directories(unit_tests
     PUBLIC
     ${GTEST_INCLUDE_PATH}
     ${GMOCK_INCLUDE_PATH}
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/IotDeviceHubManager
+    ${CMAKE_SOURCE_DIR}/src/include
+    ${CMAKE_SOURCE_DIR}/src/IotDeviceHubManager
 )
 
 target_link_libraries(unit_tests
@@ -53,7 +54,7 @@ target_link_libraries(unit_tests
 
 add_custom_target(
   run-test
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/unit_tests
+  COMMAND ${CMAKE_BINARY_DIR}/bin/unit_tests
 )
 
 # target_compile_options(unit_tests PRIVATE -O0 -g --coverage)
