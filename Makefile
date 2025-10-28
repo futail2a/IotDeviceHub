@@ -6,29 +6,24 @@ CFLAGS += $(INCLUDES)
 LDFLAGS := -lbluetooth -lPocoFoundation -lPocoJSON -lPocoUtil -lstdc++fs -Wl,-rpath,/usr/local/lib
 CFLAGS += -std=c++17 -Wall -O3
 
-DEFAULT_TARGET := IotDeviceHub
-DEFAULT_SRCS   := $(shell find . -name '*.cpp' -not -path './client/*' )
-DEFAULT_SRCS += IotDeviceHubManager/main.cpp
+TARGET := IotDeviceHub
+EXCLUDE_DIR := tests/
+TARGET_SRCS   := $(shell find . -name '*.cpp' ! -path "$(EXCLUDE_DIR)/*")
+TARGET_SRCS := $(filter-out tests/*.cpp, $(SRC_FILES))
+TARGET_SRCS += IotDeviceHubManager/main.cpp
 
-CLIENT_TARGET := IotDeviceClient
-CLIENT_SRCS   := $(shell find . -name '*.cpp' -not -path './IotDeviceHubManager/*' )
-CLIENT_SRCS += client/main.cpp
+all: $(TARGET)
 
-all: $(DEFAULT_TARGET)
-
-$(DEFAULT_TARGET): $(DEFAULT_SRCS)
+$(TARGET): $(TARGET_SRCS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
-$(CLIENT_TARGET): $(CLIENT_SRCS)
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
-
-install: $(DEFAULT_TARGET)
-	install -D -m 755 $(DEFAULT_TARGET) /usr/local/bin/$(DEFAULT_TARGET)
+install: $(TARGET)
+	install -D -m 755 $(TARGET) /usr/local/bin/$(TARGET)
 	install -D -m 644 iotdevicehub.service /etc/systemd/system/iotdevicehub.service
 
 clean:
-	-rm -f $(DEFAULT_TARGET) $(CLIENT_TARGET)
+	-rm -f $(TARGET)
 
 uninstall:
-	-rm -f /usr/local/bin/$(DEFAULT_TARGET)
+	-rm -f /usr/local/bin/$(TARGET)
 	-rm -f /etc/systemd/system/iotdevicehub.service
