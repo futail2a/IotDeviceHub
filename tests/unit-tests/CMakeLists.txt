@@ -7,12 +7,16 @@ set(GTEST_INCLUDE_PATH /usr/local/include/gtest)
 set(GMOCK_INCLUDE_PATH /usr/local/include/gmock)
 
 set(TEST_SOURCES
-  Test_WoBulbHandler.cpp
+    Test_WoBulbHandler.cpp
+    Test_WoHandHandler.cpp
+    Test_WoMotionSensorHandler.cpp
 )
 
 file(GLOB TAEGET_SOURCE
-  ${PROJECT_SOURCE_DIR}/src/devices/WoBulbHandler.cpp
-  ${PROJECT_SOURCE_DIR}/src/IotDeviceHubManager/IotEventManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/devices/WoBulbHandler.cpp
+    ${PROJECT_SOURCE_DIR}/src/devices/WoHandHandler.cpp
+    ${PROJECT_SOURCE_DIR}/src/devices/WoMotionSensorHandler.cpp
+    ${PROJECT_SOURCE_DIR}/src/IotDeviceHubManager/IotEventManager.cpp
 )
 
 find_package(Threads REQUIRED)
@@ -37,23 +41,32 @@ target_include_directories(unit_tests
 )
 
 target_link_libraries(unit_tests
-  PRIVATE
-  gtest
-  gtest_main
+    PRIVATE
+    gtest
+    gtest_main
 )
 
 target_link_libraries(unit_tests
-  PRIVATE
-  ${DBUS_LIBRARIES}
-  ${MOSQUITTO_LIBRARIES}
-  Poco::Foundation
-  Poco::JSON
-  Poco::Util
-  bluetooth
-  Threads::Threads
+    PRIVATE
+    ${DBUS_LIBRARIES}
+    ${MOSQUITTO_LIBRARIES}
+    Poco::Foundation
+    Poco::JSON
+    Poco::Util
+    bluetooth
+    Threads::Threads
 )
 
-add_custom_target(
-  run-test
+add_custom_target(test
   COMMAND ${CMAKE_BINARY_DIR}/bin/unit_tests
+)
+
+find_program(LCOV_EXECUTABLE lcov)
+find_program(GENHTML_EXECUTABLE genhtml)
+
+add_custom_target(coverage
+    COMMAND ${LCOV_EXECUTABLE} -d . -c -o coverage.info
+    COMMAND ${LCOV_EXECUTABLE} -r coverage.info "*/googletest/*" "*/tests/*" "*/c++/*" -o coverageFiltered.info
+    COMMAND ${GENHTML_EXECUTABLE} -o lcovHtml --num-spaces 4 -s --legend coverageFiltered.info
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )

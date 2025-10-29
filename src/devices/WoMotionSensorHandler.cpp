@@ -124,6 +124,7 @@ std::vector<MqttMessage> WoMotionSensorHandler::createPublishMessages(const std:
     return messages;
 }
 
+//LCOV_EXCL_START
 void WoMotionSensorHandler::m_print_sensor_data(const std::vector<uint8_t>& data)
 {
   if(data.size() > SERVICEDATA_LEN)
@@ -138,3 +139,4 @@ void WoMotionSensorHandler::m_print_sensor_data(const std::vector<uint8_t>& data
   uint8_t light_intensity = data[5]&BIT_1_0_MASK;
   std::cout << "light_intensity: " << std::to_string((int)light_intensity) << std::endl;
 }
+//LCOV_EXCL_END

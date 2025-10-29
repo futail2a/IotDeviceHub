@@ -10,17 +10,16 @@ $cd build
 ```
 $cmake ..
 ```
+* Build and run tests
 ```
 $make all
 ```
 ```
-$make run-test
+$make test
 ```
 * Generate coverage report
 ```
-$lcov -d . -c -o coverage.info
-$lcov -r coverage.info */googletest/* */tests/* */c++/* -o coverageFiltered.info
-$genhtml -o lcovHtml --num-spaces 4 -s --legend coverageFiltered.info
+$make coverage
 ```
 
 # Reference
