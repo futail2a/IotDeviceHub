@@ -8,6 +8,7 @@
 #include <string>
 #include <functional>
 #include <map>
+#include <cstdint>
 
 using AdPacketReceivedCallback = std::function<void(std::vector<uint8_t>)>;
 using ConnectCallback = std::function<void(std::vector<uint8_t>)>;

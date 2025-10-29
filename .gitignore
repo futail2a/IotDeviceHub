@@ -1,2 +1,2 @@
-config/*
+src/config/*
 !/template_config.json

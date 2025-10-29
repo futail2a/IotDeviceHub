@@ -18,7 +18,7 @@ public:
     void onAdvPacketRecived(const std::vector<uint8_t> &data) override;
     void onConnected() override;
     void onDisconnected() override;
-    void subscribeEvent() override;
+    void subscribeEvent() {};// nothing to do
 
     BleCommand getTurnOnCommand() const;
     BleCommand getTurnOffCommand() const;

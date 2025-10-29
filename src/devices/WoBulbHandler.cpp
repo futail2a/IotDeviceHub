@@ -24,19 +24,8 @@ void WoBulbHandler::onConnected()
 }
 
 void WoBulbHandler::onDisconnected()
-{    std::cout << "Color Bulb is disconnected" << std::endl;
-}
-
-void WoBulbHandler::subscribeEvent()
 {
-  if(mMediator)
-    {
-        mMediator->registerEventHandler("SomeoneDetected", [this](const std::string& eventData)
-        {
-            std::cout << "Event: SomeoneDetected" << std::endl;
-        }
-        );
-    }
+    std::cout << "Color Bulb is disconnected" << std::endl;
 }
 
 BleCommand WoBulbHandler::getTurnOnCommand() const
