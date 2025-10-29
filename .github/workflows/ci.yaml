@@ -45,3 +45,10 @@ jobs:
       with:
         files: build/coverage.info
         token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./build/coverageFiltered.info
+        fail_ci_if_error: true
