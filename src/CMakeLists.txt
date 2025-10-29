@@ -49,6 +49,8 @@ endif()
 install(TARGETS IotDeviceHub RUNTIME DESTINATION /usr/local/bin)
 install(FILES ${CMAKE_SOURCE_DIR}/iotdevicehub.service DESTINATION /etc/systemd/system PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
+if(DEFINED ENV{GITHUB_ACTIONS})
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/config)
 file(COPY ${CMAKE_SOURCE_DIR}/src/config/config.json
      DESTINATION ${CMAKE_BINARY_DIR}/bin/config)
+endif()
