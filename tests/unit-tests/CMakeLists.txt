@@ -9,13 +9,11 @@ set(GMOCK_INCLUDE_PATH /usr/local/include/gmock)
 set(TEST_SOURCES
     Test_WoBulbHandler.cpp
     Test_WoHandHandler.cpp
-    Test_WoMotionSensorHandler.cpp
 )
 
 file(GLOB TAEGET_SOURCE
     ${PROJECT_SOURCE_DIR}/src/devices/WoBulbHandler.cpp
     ${PROJECT_SOURCE_DIR}/src/devices/WoHandHandler.cpp
-    ${PROJECT_SOURCE_DIR}/src/devices/WoMotionSensorHandler.cpp
     ${PROJECT_SOURCE_DIR}/src/IotDeviceHubManager/IotEventManager.cpp
 )
 
