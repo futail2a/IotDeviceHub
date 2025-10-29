@@ -15,7 +15,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y cmake g++ libgtest-dev \
+        sudo apt install -y cmake g++ lcov libgtest-dev \
             libbluetooth-dev libdbus-1-dev libmosquitto-dev libpoco-dev
         cd /usr/src/gtest
         sudo cmake .
@@ -39,3 +39,9 @@ jobs:
       run: |
         cd build
         make coverage || true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: build/coverage.info
+        token: ${{ secrets.CODECOV_TOKEN }}
