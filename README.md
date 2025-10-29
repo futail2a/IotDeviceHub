@@ -1,4 +1,8 @@
 # IoT Device Hub
+
+[![codecov](https://codecov.io/github/futail2a/IotDeviceHub/graph/badge.svg?token=9AQAJHNJBO)](https://codecov.io/github/futail2a/IotDeviceHub)
+
+
 これはIoT機器のハブとして様々なビジネスロジックを追加できるアプリケーションです。
 
 IoT Decice Hubは周囲のIoT機器にBLE経由でセンサデータを取得したりコマンドを送信することができます。
@@ -48,19 +52,27 @@ IoT Decice Hubは周囲のIoT機器にBLE経由でセンサデータを取得し
   }
 ```
 
-3. ビルドとインストール
-* 一番上のディレクトリで以下のmakeコマンドを実行し、ビルドします。
+3. ビルドとテスト
+* 一番上のディレクトリで以下のcmakeコマンドを実行し、ビルドします。
 ```
-$ make
+$mkdir build
+$cd build
+$cmake ..
+
+$make all
 ```
-* ビルドが成功したら以下のコマンドでこのアプリケーションをiotdevicehubサービスとしてインストールすることができます。
+* ビルドが成功したら以下のコマンドでテストを実行します。
 ```
-$ make install
+$make test
 ```
-* アンインストールする場合は以下のコマンドを実行します。
+* Generate coverage report
 ```
-$ make uninstall
+$make coverage
 ```
+
+(参考)
+https://qiita.com/iydmsk/items/0021d1ef14660184f396
+
 
 4. 実行とサンプルコマンド
 * ビルドしてできたバイナリIotDeviceHubを実行するか、インストール後に以下を実行してサービスを起動するとアプリケーションが立ち上がります。
