@@ -9,5 +9,4 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
-# add_subdirectory(mocks)
 add_subdirectory(unit-tests)

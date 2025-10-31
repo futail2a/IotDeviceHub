@@ -13,7 +13,7 @@ public:
     std::string getMacAddr() const override  { return mDevceMac; };
     BleDeviceState getState() override;
     void setState(const BleDeviceState state) override;
-    void setMediator(std::shared_ptr<IotEventManager> manager) override { mMediator = manager; }
+    void setMediator(std::shared_ptr<IIotEventManager> manager) override { mMediator = manager; }
 
     void onAdvPacketRecived(const std::vector<uint8_t> &data) override;
     void onConnected() override;
@@ -30,7 +30,7 @@ private:
     const std::vector<uint8_t> mTurnOffBytes {0x57, 0x0F, 0x47, 0x01, 0x02};
     BleDeviceState mState = BleDeviceState::DISCONNECTED;
     std::mutex mConnStatusMtx;
-    std::shared_ptr<IotEventManager> mMediator;
+    std::shared_ptr<IIotEventManager> mMediator;
 };
 
 #endif

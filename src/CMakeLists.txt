@@ -22,6 +22,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/include
   ${CMAKE_SOURCE_DIR}/src/ble
   ${CMAKE_SOURCE_DIR}/src/iot_device_hub_manager
+  ${CMAKE_SOURCE_DIR}/src/iot_event_manager
   ${CMAKE_SOURCE_DIR}/src/mqtt
   ${CMAKE_SOURCE_DIR}/src/devices
   /usr/local/include/Poco

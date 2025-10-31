@@ -1,3 +1,6 @@
+#ifndef IOT_DEVICE_MANAGER_H
+#define IOT_DEVICE_MANAGER_H
+
 #include "BleAbstructLayer.h"
 #include "WoMotionSensorHandler.h"
 #include "WoBulbHandler.h"
@@ -43,3 +46,5 @@ private:
     std::unique_ptr<Poco::Timer> mLightTimer;
     void onLightTimeout(Poco::Timer& timer);
 };
+
+#endif
