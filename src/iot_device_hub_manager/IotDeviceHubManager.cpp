@@ -148,12 +148,21 @@ void IotDeviceHubManager::getConfigurationParameters()
         {
             std::cerr << e.what() << '\n';
         }
-
-
     }
     else
     {
-        std::cerr << "Config file not found: " << CONFIG_FILE_PATH << std::endl;
+        std::cerr << "Config file not found: " << CONFIG_FILE_PATH << ", initialize with default value" << std::endl;
+
+        const std::string DEFAULT_MAC = "00:00:00:00:00:00";
+        mBulbDevice = std::make_shared<WoBulbHandler>(DEFAULT_MAC);
+        mBotDevice = std::make_shared<WoHandHandler>(DEFAULT_MAC);
+        mMotionSensorDevice = std::make_shared<WoMotionSensorHandler>(DEFAULT_MAC);
+
+        const std::string brokerIpv4 = "127.0.0.1";
+        const std::string caCertPath = "";
+        const std::string clientCertPath = "";
+        const std::string clientKeyPath = "";
+        mMqtt =std::make_unique<MqttManager>(brokerIpv4, 1883U, caCertPath, clientCertPath, clientKeyPath);
     }
 
 }

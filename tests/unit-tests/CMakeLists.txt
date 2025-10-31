@@ -11,58 +11,23 @@ set(TEST_SOURCES
     Test_WoHandHandler.cpp
 )
 
-file(GLOB TAEGET_SOURCE
-    ${PROJECT_SOURCE_DIR}/src/devices/WoBulbHandler.cpp
-    ${PROJECT_SOURCE_DIR}/src/devices/WoHandHandler.cpp
-    ${PROJECT_SOURCE_DIR}/src/IotDeviceHubManager/IotEventManager.cpp
-)
-
-find_package(Threads REQUIRED)
-find_package(Poco REQUIRED Foundation JSON Util)
-
-add_executable(unit_tests ${TEST_SOURCES})
-
-target_sources(unit_tests
-    PRIVATE
-    ${TAEGET_SOURCE}
-)
-# target_compile_options(unit_tests PRIVATE -O0 -g --coverage)
-# target_link_options   (unit_tests PRIVATE --coverage)
-
-target_include_directories(unit_tests
-    PUBLIC
-    ${GTEST_INCLUDE_PATH}
-    ${GMOCK_INCLUDE_PATH}
-    ${CMAKE_SOURCE_DIR}/src/include
-    ${CMAKE_SOURCE_DIR}/src/IotDeviceHubManager
-    ${CMAKE_SOURCE_DIR}/src/devices
-)
-
-target_link_libraries(unit_tests
-    PRIVATE
-    gtest
-    gtest_main
-)
-
-target_link_libraries(unit_tests
-    PRIVATE
-    ${DBUS_LIBRARIES}
-    ${MOSQUITTO_LIBRARIES}
-    Poco::Foundation
-    Poco::JSON
-    Poco::Util
-    bluetooth
-    Threads::Threads
-)
+# add_subdirectory(ble)
+add_subdirectory(devices)
+# add_subdirectory(iot_device_hub_manager)
+add_subdirectory(mqtt)
 
 add_custom_target(test
-  COMMAND ${CMAKE_BINARY_DIR}/bin/unit_tests
+    DEPENDS ut_devices ut_mqtt #ut_iot_device_hub_manager
+    COMMAND ${CMAKE_BINARY_DIR}/bin/ut_devices
+    COMMAND ${CMAKE_BINARY_DIR}/bin/ut_mqtt
+    # COMMAND ${CMAKE_BINARY_DIR}/bin/ut_iot_device_hub_manager
 )
 
 find_program(LCOV_EXECUTABLE lcov)
 find_program(GENHTML_EXECUTABLE genhtml)
 
 add_custom_target(coverage
+    DEPENDS test
     COMMAND ${LCOV_EXECUTABLE} -d . -c -o coverage.info
     COMMAND ${LCOV_EXECUTABLE} -r coverage.info "*/googletest/*" "*/tests/*" "*/c++/*" -o coverageFiltered.info
     COMMAND ${GENHTML_EXECUTABLE} -o lcovHtml --num-spaces 4 -s --legend coverageFiltered.info
