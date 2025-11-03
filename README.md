@@ -2,6 +2,107 @@
 
 [![codecov](https://codecov.io/github/futail2a/IotDeviceHub/graph/badge.svg?token=9AQAJHNJBO)](https://codecov.io/github/futail2a/IotDeviceHub)
 
+This is an application that can serve as a hub for IoT devices, allowing you to add various business logics.
+
+IoT Device Hub can acquire sensor data from nearby IoT devices and send commands to them via BLE.
+
+It can also receive commands from external applications through MQTT.
+
+
+## Set up
+
+1.Configure BLE devices
+* Rename template_config.json under config/ directory config.json
+* Add MAC address of BLE decices which you want to connect to
+* Currently, support only SwitchBot smart bulb, bot, and motion sensor
+* Empty MAC if you don’t use it
+
+```
+  "devices":
+  {
+    "woBulb":
+    {
+      "mac": "xx:xx:xx:xx:xx:xx"
+    },
+    "woHand":
+    {
+      "mac": "xx:xx:xx:xx:xx:xx"
+    },
+    "woMotionSensor":
+    {
+      "mac": "xx:xx:xx:xx:xx:xx"
+    }
+  },
+```
+
+2. Configure MQTT broker
+* Add MQTT broker settings to config/config.json
+* IPv4 and port are mandatory
+* If you need to connect with TLS, add CA certification, client certification, and client key. If you don’t you TLS, empty them
+
+```
+  "mqtt":
+  {
+    "brokerIpv4": "127.0.0.1",
+    "brokerPort": 1883,
+    "caCert": "",
+    "clientCert": "",
+    "clientKey": ""
+  }
+```
+
+3. Build and Test
+* Run below cmake command at the top directory to buld it
+```
+$mkdir build
+$cd build
+$cmake ..
+
+$make all
+```
+* Once buld succeed, run below command to start test
+```
+$make test
+```
+* Generate coverage report
+```
+$make coverage
+```
+
+(Reference)
+https://qiita.com/iydmsk/items/0021d1ef14660184f396
+
+
+4. Run and send command
+* You can start IotDeviceHub to execute IotDeviceHub binary, or start iotdevicehub service after install
+```
+$ ./IotDeviceHub
+#OR
+$ systemctl daemon-reload
+$ systemctl start iotdevicehub
+```
+
+Then, when you publish ”exec_bot” topic to the MQTT broker, it operate switching function if the device installing IotDeviceHub connects to SwitchBot Bot
+
+## Support devices
+* SwitchBot
+    * Smart bulb
+    * Bot
+    * Motion sensor
+
+If you want to add BLE devices, you can inherite BleDeviceHandler class and create own BLE device class
+
+## Known issue
+* Cannot use both the functions that read advertising packets and those that are available after establishing a BLE connection at the same time
+     * The BleSockScanManager and BleDbusConnectionManager cannot be used together, and the parsing of advertising packets in BleSockScanManager is not yet complete.
+## Reference
+https://github.com/OpenWonderLabs/SwitchBotAPI-BLE/tree/latest
+
+
+*    *    *
+
+
+# IoT Device Hub
 
 これはIoT機器のハブとして様々なビジネスロジックを追加できるアプリケーションです。
 
@@ -15,8 +116,8 @@ IoT Decice Hubは周囲のIoT機器にBLE経由でセンサデータを取得し
 1. BLE機器の設定
 * config/ディレクトリにあるtemplate_config.jsonをコピーしてconfig.jsonを作成します。
 * config.jsonに以下のフォーマットで接続したいBLE機器のMACアドレスを追加します。
-* 現在対応している機器はSwitchBotのスマート電球、ボット、人感センサーの三種類です。使用しないものについては空にします。("mac": "")
-
+* 現在対応している機器はSwitchBotのスマート電球、ボット、人感センサーの三種類です。
+* 使用しないものについては空にします。("mac": "")
 
 ```
   "devices":
@@ -91,11 +192,10 @@ $ systemctl start iotdevicehub
     * ボット
     * 人感センサー
 
-もしBLE機器を追加したい場合はdevices/ディレクトリにあるBleDeviceHandler.cppにあるBleDeviceHandlerクラスを継承して独自の機器を追加することができます。
+もしBLE機器を追加したい場合はBleDeviceHandlerクラスを継承して独自の機器を追加することができます。
 
-## 既知の問題
-* アドバタイズパケットの読み込みとBLE接続後で利用できる機能の併用ができない
+## 既知の問題/Known issue
+*アドバタイズパケットの読み込みとBLE接続後で利用できる機能の併用ができない
     * BleSockScanManagerとBleDbusConnectionManagerの併用ができず、またBleSockScanManageのアドバタイズパケットのパースが未完了のため
-
 ## 参考
 https://github.com/OpenWonderLabs/SwitchBotAPI-BLE/tree/latest
