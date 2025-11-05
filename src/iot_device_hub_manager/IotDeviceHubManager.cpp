@@ -47,12 +47,34 @@ bool IotDeviceHubManager::init()
 
     if(mMqtt && mMqtt->init("iot_device_hub"))
     {
-        mMqtt->subscribe("button");
         mMqtt->subscribe("exec_bot");
+        mMqtt->subscribe("switch_bulb");
         mEventManager->registerEventHandler("exec_bot", [this](const std::string& eventData)
         {
             std::cout << "Event: exec_bot" << std::endl;
             auto command = mBotDevice->getExecActionCommand();
+            mBle->sendBleCommand(command);
+        }
+        );
+        mEventManager->registerEventHandler("switch_bulb", [this](const std::string& eventData)
+        {
+            std::cout << "Event: switch_bulb" << std::endl;
+            BleCommand command{};
+            if(eventData == "ON")
+            {
+                command = mBulbDevice->getTurnOnCommand();
+                mBle->sendBleCommand(command);
+            }
+            else if(eventData == "OFF")
+            {
+                command = mBulbDevice->getTurnOffCommand();
+                mBle->sendBleCommand(command);
+            }
+            else
+            {
+                std::cerr << "Unknown bulb command: " << eventData << std::endl;
+                return;
+            }
             mBle->sendBleCommand(command);
         }
         );
