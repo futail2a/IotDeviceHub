@@ -31,7 +31,7 @@ target_include_directories(ut_devices
     ${CMAKE_SOURCE_DIR}/src/devices
     ${CMAKE_SOURCE_DIR}/src/ble
     ${CMAKE_SOURCE_DIR}/src/mqtt
-    ${CMAKE_CURRENT_SOURCE_DIR}/mocks
+    ${CMAKE_SOURCE_DIR}/tests/mocks
 )
 
 target_link_libraries(ut_devices

@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "WoBulbHandler.h"
+#include "IotEventManagerMock.h"
 
 const std::string DEFAULT_MAC = "00:00:00:00:00:00";
 

@@ -1,6 +1,5 @@
 #include "IotEventManager.h"
 
-
 void IotEventManager::onEvent(const std::string& eventName, const std::string& eventData)
 {
     auto it = handlers.find(eventName);

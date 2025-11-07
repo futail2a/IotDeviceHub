@@ -25,19 +25,21 @@ target_include_directories(ut_mqtt
     ${CMAKE_SOURCE_DIR}/src/devices
     ${CMAKE_SOURCE_DIR}/src/ble
     ${CMAKE_SOURCE_DIR}/src/mqtt
-    ${CMAKE_CURRENT_SOURCE_DIR}/mocks
+    ${CMAKE_SOURCE_DIR}/tests/mocks
 )
 
 target_link_libraries(ut_mqtt
     PRIVATE
     gtest
     gtest_main
+    gmock
+    gmock_main
 )
 
 target_link_libraries(ut_mqtt
     PRIVATE
     ${DBUS_LIBRARIES}
-    ${MOSQUITTO_LIBRARIES}
+    MosquittoMock
 )
 
 set_target_properties(ut_mqtt PROPERTIES

@@ -1,10 +1,10 @@
-#ifndef IOTDEVICEHUB_TESTS_MOCKS_IOTEVENTMANAGERMOCK_H
-#define IOTDEVICEHUB_TESTS_MOCKS_IOTEVENTMANAGERMOCK_H
+#ifndef IOT_EVENT_MANAGER_MOCK_H
+#define IOT_EVENT_MANAGER_MOCK_H
 
 #include "IIotEventManager.h"
 #include <gmock/gmock.h>
 
-class MockIotEventManager : public IIotEventManager
+class IotEventManager : public IIotEventManager
 {
 public:
     MOCK_METHOD(void, onEvent, (const std::string& eventName, const std::string& eventData), (override));

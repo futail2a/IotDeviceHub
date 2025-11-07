@@ -8,7 +8,7 @@ class IIotEventManager
 {
 public:
     IIotEventManager() = default;
-    virtual ~IIotEventManager(){};
+    virtual ~IIotEventManager() = default;
 
     virtual void onEvent(const std::string& eventName, const std::string& eventData) = 0;
     virtual void registerEventHandler(const std::string& eventName, std::function<void(const std::string&)> handler) = 0;
