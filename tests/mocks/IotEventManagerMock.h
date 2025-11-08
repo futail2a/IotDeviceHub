@@ -4,9 +4,11 @@
 #include "IIotEventManager.h"
 #include <gmock/gmock.h>
 
-class IotEventManager : public IIotEventManager
+class IotEventManagerMock : public IIotEventManager
 {
 public:
+    IotEventManagerMock() = default;
+    ~IotEventManagerMock() override = default;
     MOCK_METHOD(void, onEvent, (const std::string& eventName, const std::string& eventData), (override));
     MOCK_METHOD(void, registerEventHandler,
                 (const std::string& eventName, std::function<void(const std::string&)> handler), (override));

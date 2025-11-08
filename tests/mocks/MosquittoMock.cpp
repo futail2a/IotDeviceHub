@@ -86,8 +86,7 @@ extern "C" {
     }
 
     int mosquitto_lib_cleanup() {
-        if (gMosqMock) {
-            gMosqMock->mosquitto_lib_cleanup();
-        }
+        return gMosqMock ? gMosqMock->mosquitto_lib_cleanup()
+                          : MOSQ_ERR_SUCCESS;
     }
 }
