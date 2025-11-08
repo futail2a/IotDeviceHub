@@ -1,5 +1,4 @@
 #include "MosquittoMock.h"
-
 MosquittoMock* gMosqMock = nullptr;
 
 extern "C" {

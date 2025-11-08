@@ -19,8 +19,8 @@ add_subdirectory(mqtt)
 add_custom_target(test
     DEPENDS ut_devices ut_mqtt #ut_iot_device_hub_manager
     COMMAND ${CMAKE_BINARY_DIR}/bin/ut_devices
-    COMMAND ${CMAKE_BINARY_DIR}/bin/ut_mqtt
     # COMMAND ${CMAKE_BINARY_DIR}/bin/ut_iot_device_hub_manager
+    COMMAND ${CMAKE_BINARY_DIR}/bin/ut_mqtt
 )
 
 find_program(LCOV_EXECUTABLE lcov)

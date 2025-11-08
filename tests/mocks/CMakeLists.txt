@@ -3,5 +3,8 @@ add_library(MosquittoMock STATIC
 )
 
 target_include_directories(MosquittoMock PUBLIC
+    ${GTEST_INCLUDE_PATH}
+    ${GMOCK_INCLUDE_PATH}
+    ${CMAKE_SOURCE_DIR}/tests/mocks
     /usr/include/
 )

@@ -6,7 +6,7 @@
 #include "WoBulbHandler.h"
 #include "WoHandHandler.h"
 #include "IMqttManager.h"
-#include "IotEventManager.h"
+#include "IIotEventManager.h"
 
 #include <iostream>
 #include <iomanip>
@@ -33,7 +33,7 @@ public:
 private:
     std::unique_ptr<BleAbstructLayer> mBle;
     std::unique_ptr<IMqttManager> mMqtt;
-    std::shared_ptr<IotEventManager> mEventManager;
+    std::shared_ptr<IIotEventManager> mEventManager;
 
     std::shared_ptr<WoMotionSensorHandler> mMotionSensorDevice;
     std::shared_ptr<WoBulbHandler> mBulbDevice;

@@ -4,10 +4,15 @@
 #include <mosquitto.h>
 #include <gmock/gmock.h>
 
+class MosquittoMock;
+extern MosquittoMock* gMosqMock;
+
 class MosquittoMock
 {
 public:
-    MOCK_METHOD(int, mosquitto_lib_init, ());
+    MosquittoMock() {gMosqMock = this;};
+    ~MosquittoMock() {gMosqMock = nullptr;};
+    MOCK_METHOD(int, mosquitto_lib_init, ()), (override);
     MOCK_METHOD(struct mosquitto *, mosquitto_new,(const char *id, bool clean_session, void *obj));
     MOCK_METHOD(int, mosquitto_int_option, (struct mosquitto *mosq, int option, int value));
     MOCK_METHOD(void, mosquitto_connect_v5_callback_set, (struct mosquitto *mosq, void (*on_connect)(struct mosquitto *, void *, int, int, const mosquitto_property *)));

@@ -11,19 +11,26 @@
 #include "MosquittoMock.h"
 
 const std::string DEFAULT_MAC = "00:00:00:00:00:00";
+using ::testing::_;
 
 TEST(Test_MqttManager, init)
 {
+    MosquittoMock mosqMock;
+    EXPECT_CALL(mosqMock, mosquitto_lib_init())
+        .WillOnce(testing::Return(MOSQ_ERR_SUCCESS));
+
+    EXPECT_CALL(mosqMock, mosquitto_new(_, _, _))
+        .WillOnce(testing::Return(reinterpret_cast<struct mosquitto*>(0x1)));
+
     MqttManager mqttManager;
     mqttManager.init("iot_device_hub");
-    EXPECT_TRUE(true);//todo
 }
 
 // TEST(Test_MqttManager, onMessageReceived)
 // {
 //     MqttManager mqttManager;
 //     mqttManager.init("iot_device_hub");
-//     auto eventManagerMock = std::make_shared<IotEventManager>();
+//     std::shared_ptr<IotEventManager> eventManagerMock = std::make_shared<IotEventManager>();
 //     mqttManager.setMediator(eventManagerMock);
 
 //     EXPECT_CALL(*eventManagerMock, onEvent(testing::_, testing::_)).Times(1);
