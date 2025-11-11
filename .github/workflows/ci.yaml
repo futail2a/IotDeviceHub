@@ -15,12 +15,20 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y cmake g++ lcov libgtest-dev \
+        sudo apt install -y cmake g++ lcov libgtest-dev libgmock-dev \
             libbluetooth-dev libdbus-1-dev libmosquitto-dev libpoco-dev
-        cd /usr/src/gtest
-        sudo cmake .
-        sudo make
-        sudo cp lib/*.a /usr/lib
+        if [ -d /usr/src/gtest ]; then
+          cd /usr/src/gtest
+          sudo cmake .
+          sudo make
+          sudo cp -v lib/*.a /usr/lib || true
+        fi
+        if [ -d /usr/src/gmock ]; then
+          cd /usr/src/gmock
+          sudo cmake .
+          sudo make
+          sudo cp -v lib/*.a /usr/lib || true
+        fi
 
     - name: Build project
       run: |
