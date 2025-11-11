@@ -26,3 +26,9 @@ Project: https://www.freedesktop.org/wiki/Software/dbus/
 ## Eclipse Mosquitto
 License: Eclipse Public License 2.0 and Eclipse Distribution License 1.0
 Project: https://mosquitto.org/
+
+---
+
+## sdbus-cpp
+License: GNU LESSER GENERAL PUBLIC LICENSE Version 2.1
+Project: https://github.com/Kistler-Group/sdbus-cpp/tree/master

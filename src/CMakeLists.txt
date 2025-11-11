@@ -8,6 +8,7 @@ pkg_check_modules(DBUS REQUIRED dbus-1)
 pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
 
 find_package(Poco REQUIRED Foundation JSON Util)
+find_package(sdbus-c++ REQUIRED)
 
 file(GLOB_RECURSE ALL_CPP RELATIVE ${CMAKE_SOURCE_DIR} CONFIGURE_DEPENDS *.cpp)
 set(TARGET_SRCS "")
@@ -39,7 +40,8 @@ target_link_libraries(IotDeviceHub PRIVATE
   Poco::Foundation
   Poco::JSON
   Poco::Util
-  bluetooth
+  # bluetooth
+  SDBusCpp::sdbus-c++
 )
 
 find_library(STDCXXFS_LIB NAMES stdc++fs)
