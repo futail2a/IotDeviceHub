@@ -16,7 +16,7 @@
 #include <Poco/Timezone.h>
 #include "Poco/Util/JSONConfiguration.h"
 
-const std::string CONFIG_FILE_PATH = "config/config.json";
+const std::string CONFIG_FILE_PATH = "/etc/iotdevicehub/config.json";
 
 bool IotDeviceHubManager::init()
 {
