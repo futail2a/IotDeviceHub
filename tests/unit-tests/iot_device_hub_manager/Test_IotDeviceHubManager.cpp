@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "IotDeviceHubManager.h"
+#include "IotEventManagerMock.h"
 
 TEST(Test_IotDeviceHubManager, getMacAddr)
 {

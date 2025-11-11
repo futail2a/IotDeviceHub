@@ -1,7 +1,7 @@
 #ifndef BLE_DEVICE_HANDLER_H
 #define BLE_DEVICE_HANDLER_H
 
-#include "IotEventManager.h"
+#include "IIotEventManager.h"
 
 #include <memory>
 #include <vector>
@@ -40,7 +40,7 @@ public:
     virtual std::string getMacAddr() const = 0;
     virtual BleDeviceState getState() = 0;
     virtual void setState(const BleDeviceState state) = 0;
-    virtual void setMediator(std::shared_ptr<IotEventManager> manager) = 0;
+    virtual void setMediator(std::shared_ptr<IIotEventManager> manager) = 0;
 
     virtual void onAdvPacketRecived(const std::vector<uint8_t> &data) = 0;
     virtual void onConnected() = 0;

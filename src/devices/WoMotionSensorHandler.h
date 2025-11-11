@@ -2,7 +2,7 @@
 #define WO_MOTION_SENSOR_HANDLER_H
 
 #include "BleDeviceHandler.h"
-#include "IotEventManager.h"
+#include "IIotEventManager.h"
 
 #include <string>
 #include <vector>
@@ -31,7 +31,7 @@ public:
     std::string getMacAddr() const override { return mDevceMac; };
     BleDeviceState getState() override;
     void setState(const BleDeviceState state) override;
-    void setMediator(std::shared_ptr<IotEventManager> manager) override { mMediator = manager; }
+    void setMediator(std::shared_ptr<IIotEventManager> manager) override { mMediator = manager; }
 
     void onAdvPacketRecived(const std::vector<uint8_t> &data) override;
     void onConnected() override;
@@ -48,7 +48,7 @@ private:
   std::mutex mConnStatusMtx;
 
   std::string mDevceMac = "";
-  std::shared_ptr<IotEventManager> mMediator;
+  std::shared_ptr<IIotEventManager> mMediator;
 };
 
 #endif

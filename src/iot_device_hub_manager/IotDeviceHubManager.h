@@ -1,9 +1,12 @@
+#ifndef IOT_DEVICE_MANAGER_H
+#define IOT_DEVICE_MANAGER_H
+
 #include "BleAbstructLayer.h"
 #include "WoMotionSensorHandler.h"
 #include "WoBulbHandler.h"
 #include "WoHandHandler.h"
-#include "MqttManager.h"
-#include "IotEventManager.h"
+#include "IMqttManager.h"
+#include "IIotEventManager.h"
 
 #include <iostream>
 #include <iomanip>
@@ -29,8 +32,8 @@ public:
 
 private:
     std::unique_ptr<BleAbstructLayer> mBle;
-    std::unique_ptr<MqttManager> mMqtt;
-    std::shared_ptr<IotEventManager> mEventManager;
+    std::unique_ptr<IMqttManager> mMqtt;
+    std::shared_ptr<IIotEventManager> mEventManager;
 
     std::shared_ptr<WoMotionSensorHandler> mMotionSensorDevice;
     std::shared_ptr<WoBulbHandler> mBulbDevice;
@@ -43,3 +46,5 @@ private:
     std::unique_ptr<Poco::Timer> mLightTimer;
     void onLightTimeout(Poco::Timer& timer);
 };
+
+#endif

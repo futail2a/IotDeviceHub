@@ -5,6 +5,8 @@
 #include "BleDbusConnectionManager.h"
 #include "WoMotionSensorHandler.h"
 #include "WoBulbHandler.h"
+#include "MqttManager.h"
+#include "IotEventManager.h"
 
 #include <iostream>
 #include <filesystem>

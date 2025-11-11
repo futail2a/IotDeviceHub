@@ -12,7 +12,6 @@ file(GLOB TAEGET_SOURCE
     ${PROJECT_SOURCE_DIR}/src/devices/WoBulbHandler.cpp
     ${PROJECT_SOURCE_DIR}/src/devices/WoHandHandler.cpp
     ${PROJECT_SOURCE_DIR}/src/devices/WoMotionSensorHandler.cpp
-    ${PROJECT_SOURCE_DIR}/src/iot_device_hub_manager/IotEventManager.cpp
 )
 
 add_executable(ut_devices ${TEST_SOURCES})
@@ -28,10 +27,11 @@ target_include_directories(ut_devices
     ${GMOCK_INCLUDE_PATH}
     ${DBUS_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/src/include
-    ${CMAKE_SOURCE_DIR}/src/iot_device_hub_manager
+    ${CMAKE_SOURCE_DIR}/src/iot_event_manager
     ${CMAKE_SOURCE_DIR}/src/devices
     ${CMAKE_SOURCE_DIR}/src/ble
     ${CMAKE_SOURCE_DIR}/src/mqtt
+    ${CMAKE_SOURCE_DIR}/tests/mocks
 )
 
 target_link_libraries(ut_devices

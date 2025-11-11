@@ -19,8 +19,8 @@ add_subdirectory(mqtt)
 add_custom_target(test
     DEPENDS ut_devices ut_mqtt #ut_iot_device_hub_manager
     COMMAND ${CMAKE_BINARY_DIR}/bin/ut_devices
-    COMMAND ${CMAKE_BINARY_DIR}/bin/ut_mqtt
     # COMMAND ${CMAKE_BINARY_DIR}/bin/ut_iot_device_hub_manager
+    COMMAND ${CMAKE_BINARY_DIR}/bin/ut_mqtt
 )
 
 find_program(LCOV_EXECUTABLE lcov)
@@ -29,7 +29,7 @@ find_program(GENHTML_EXECUTABLE genhtml)
 add_custom_target(coverage
     DEPENDS test
     COMMAND ${LCOV_EXECUTABLE} -d . -c -o coverage.info
-    COMMAND ${LCOV_EXECUTABLE} -r coverage.info "*/googletest/*" "*/tests/*" "*/c++/*" -o coverageFiltered.info
+    COMMAND ${LCOV_EXECUTABLE} -r coverage.info "*/googletest/*" "*/googlemock/*" "*/tests/*" "*/c++/*" -o coverageFiltered.info
     COMMAND ${GENHTML_EXECUTABLE} -o lcovHtml --num-spaces 4 -s --legend coverageFiltered.info
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
