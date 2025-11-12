@@ -37,6 +37,10 @@ public:
     BleDeviceHandler() = default;
     ~BleDeviceHandler() = default;
 
+    void incrementConnCnt() { mConnRetryCnt++; }
+    void resetConnCnt() { mConnRetryCnt = 0; }
+    uint8_t getConnCnt() const { return mConnRetryCnt; }
+
     virtual std::string getMacAddr() const = 0;
     virtual BleDeviceState getState() = 0;
     virtual void setState(const BleDeviceState state) = 0;
@@ -46,6 +50,9 @@ public:
     virtual void onConnected() = 0;
     virtual void onDisconnected() = 0;
     virtual void subscribeEvent() = 0;
+
+protected:
+    uint8_t mConnRetryCnt = 0;
 };
 
 #endif

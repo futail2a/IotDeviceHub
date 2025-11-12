@@ -1,8 +1,6 @@
 #include "IotDeviceHubManager.h"
 
-#include "BleAbstructLayer.h"
-#include "BleDbusScanManager.h"
-#include "BleDbusConnectionManager.h"
+#include "BluezSdbusManager.h"
 #include "WoMotionSensorHandler.h"
 #include "WoBulbHandler.h"
 #include "MqttManager.h"
@@ -20,8 +18,8 @@ const std::string CONFIG_FILE_PATH = "/etc/iotdevicehub/config.json";
 
 bool IotDeviceHubManager::init()
 {
-    mBle =std::make_unique<BleAbstructLayer>();
-    if(!mBle->init(std::make_unique<BleDbusScanManager>(), std::make_unique<BleDbusConnectionManager>()))
+    mBle =std::make_unique<BluezSdbusManager>();
+    if(!mBle->init())
     {
         std::cerr << "Failed to initialize Bluez" << std::endl;
         return false;
@@ -32,18 +30,18 @@ bool IotDeviceHubManager::init()
     getConfigurationParameters();
     if(mBulbDevice)
     {
-        mBle->registerConnectDevice(mBulbDevice);
+        mBle->setDevice(mBulbDevice);
         mBulbDevice->setMediator(mEventManager);
     }
 
     if(mBotDevice)
     {
-        mBle->registerConnectDevice(mBotDevice);
+        mBle->setDevice(mBotDevice);
     }
 
     if(mMotionSensorDevice)
     {
-        mBle->registerScannedDevice(mMotionSensorDevice);
+        mBle->setDevice(mMotionSensorDevice);
         mMotionSensorDevice->setUpdateCb([this](std::vector<uint8_t> data){ this->onMotionUpdate(data); });
     }
 
@@ -55,7 +53,7 @@ bool IotDeviceHubManager::init()
         {
             std::cout << "Event: exec_bot" << std::endl;
             auto command = mBotDevice->getExecActionCommand();
-            mBle->sendBleCommand(command);
+            mBle->sendCommand(command);
         }
         );
         mEventManager->registerEventHandler("switch_bulb", [this](const std::string& eventData)
@@ -65,19 +63,19 @@ bool IotDeviceHubManager::init()
             if(eventData == "ON")
             {
                 command = mBulbDevice->getTurnOnCommand();
-                mBle->sendBleCommand(command);
+                mBle->sendCommand(command);
             }
             else if(eventData == "OFF")
             {
                 command = mBulbDevice->getTurnOffCommand();
-                mBle->sendBleCommand(command);
+                mBle->sendCommand(command);
             }
             else
             {
                 std::cerr << "Unknown bulb command: " << eventData << std::endl;
                 return;
             }
-            mBle->sendBleCommand(command);
+            mBle->sendCommand(command);
         }
         );
         mMqtt->setMediator(mEventManager);
@@ -193,7 +191,7 @@ void IotDeviceHubManager::getConfigurationParameters()
 
 void IotDeviceHubManager::run()
 {
-    if(!mBle->start())
+    if(!mBle->startScan())
     {
         std::cerr << "Failed to start BLE" << std::endl;
         return;
@@ -202,14 +200,14 @@ void IotDeviceHubManager::run()
     while(isRunning)
     {
         mBle->connectDevices();
-        sleep(5);
+        sleep(1);
     }
 }
 
 void IotDeviceHubManager::stop()
 {
     isRunning = false;
-    mBle->stop();
+    mBle->stopScan();
     mMqtt->stop();
     mMqtt->deinit();
 }
@@ -227,7 +225,7 @@ void IotDeviceHubManager::onLightTimeout(Poco::Timer& timer)
 {
     std::cout << "Light timer expired, turning off the light" << std::endl;
     auto command = mBulbDevice->getTurnOffCommand();
-    mBle->sendBleCommand(command);
+    mBle->sendCommand(command);
     mLightTimer.reset();
 }
 
@@ -236,7 +234,7 @@ void IotDeviceHubManager::onMotionUpdate(std::vector<uint8_t> data)
   std::cout << "Motion data received" <<std::endl;
 
   auto command = mBulbDevice->getTurnOnCommand();
-  mBle->sendBleCommand(command);
+  mBle->sendCommand(command);
 
   if(mLightTimer)
   {

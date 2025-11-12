@@ -16,7 +16,8 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y cmake g++ lcov libgtest-dev libgmock-dev \
-            libbluetooth-dev libdbus-1-dev libmosquitto-dev libpoco-dev
+            libbluetooth-dev libdbus-1-dev libmosquitto-dev libpoco-dev \
+            libsystemd-dev
         if [ -d /usr/src/gtest ]; then
           cd /usr/src/gtest
           sudo cmake .
@@ -29,6 +30,15 @@ jobs:
           sudo make
           sudo cp -v lib/*.a /usr/lib || true
         fi
+
+    - name: Build sdbus-c++
+      run: |
+          git clone https://github.com/Kistler-Group/sdbus-cpp.git
+          mkdir -p sdbus-cpp/build
+          cd sdbus-cpp/build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+          sudo make install
 
     - name: Build project
       run: |

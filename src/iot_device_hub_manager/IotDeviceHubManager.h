@@ -1,7 +1,7 @@
 #ifndef IOT_DEVICE_MANAGER_H
 #define IOT_DEVICE_MANAGER_H
 
-#include "BleAbstructLayer.h"
+#include "IBleManager.h"
 #include "WoMotionSensorHandler.h"
 #include "WoBulbHandler.h"
 #include "WoHandHandler.h"
@@ -31,7 +31,7 @@ public:
     void notify(const std::vector<uint8_t>& data);
 
 private:
-    std::unique_ptr<BleAbstructLayer> mBle;
+    std::unique_ptr<IBleManager> mBle;
     std::unique_ptr<IMqttManager> mMqtt;
     std::shared_ptr<IIotEventManager> mEventManager;
 
