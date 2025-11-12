@@ -6,12 +6,12 @@ bool BluezSdbusManager::init()
     try
     {
         mBusConnection = sdbus::createSystemBusConnection();
-        mBluezProxy = sdbus::createProxy(*mBusConnection, BLUEZ_SERVICE, HCI0_PATH);
-        mObjectManagerProxy = sdbus::createProxy(*mBusConnection, BLUEZ_SERVICE, "/");
+        mBluezProxy = sdbus::createProxy(*mBusConnection, sdbus::ServiceName(BLUEZ_SERVICE), sdbus::ObjectPath(HCI0_PATH));
+        mObjectManagerProxy = sdbus::createProxy(*mBusConnection, sdbus::ServiceName(BLUEZ_SERVICE), sdbus::ObjectPath("/"));
         mObjectManagerProxy->registerSignalHandler(
-            "org.freedesktop.DBus.ObjectManager",
-            "InterfacesAdded",
-            [this](sdbus::Signal& signal) { this->onInterfaceAdded(signal, this); }
+            sdbus::InterfaceName("org.freedesktop.DBus.ObjectManager"),
+            sdbus::SignalName("InterfacesAdded"),
+            [this](sdbus::Signal signal) { this->onInterfaceAdded(signal, this); }
         );
         mBusConnection->enterEventLoopAsync();
     }
@@ -40,7 +40,7 @@ bool BluezSdbusManager::startScan()
 
     try
     {
-        auto method = mBluezProxy->createMethodCall(BLUEZ_ADAPTER, "StartDiscovery");
+        auto method = mBluezProxy->createMethodCall(sdbus::InterfaceName(BLUEZ_ADAPTER), sdbus::MethodName("StartDiscovery"));
         mBluezProxy->callMethod(method);
         std::cout << "Start BLE scan" << std::endl;
     }
@@ -61,7 +61,7 @@ bool BluezSdbusManager::stopScan()
     }
 
     try {
-        auto method = mBluezProxy->createMethodCall(BLUEZ_ADAPTER, "StopDiscovery");
+        auto method = mBluezProxy->createMethodCall(sdbus::InterfaceName(BLUEZ_ADAPTER), sdbus::MethodName("StopDiscovery"));
         mBluezProxy->callMethod(method);
         std::cout << "Stop BLE scan" << std::endl;
     }
@@ -81,10 +81,11 @@ void BluezSdbusManager::setDevice(std::shared_ptr<BleDeviceHandler> device)
         std::string devicePath = HCI0_PATH + "/dev_" + convertToBluezMac(device->getMacAddr());
         std::string matchRule = "type='signal',interface='org.freedesktop.DBus.Properties',"
                                 "member='PropertiesChanged',path='" + devicePath + "'";
-        auto match = mBusConnection->addMatch(matchRule, [this](sdbus::Message& msg) { onPropertiesChanged(msg, this); });
-        mMacSlotMap[device->getMacAddr()] = std::move(match);
+        // match =
+        mBusConnection->addMatch(matchRule, [this](sdbus::Message msg) { onPropertiesChanged(msg, this); });
+        // mMacSlotMap[device->getMacAddr()] = std::move(match);
 
-        mMacProxyMap[device->getMacAddr()] = sdbus::createProxy(*mBusConnection, BLUEZ_SERVICE, devicePath);
+        mMacProxyMap[device->getMacAddr()] = sdbus::createProxy(*mBusConnection, sdbus::ServiceName(BLUEZ_SERVICE), sdbus::ObjectPath(devicePath));
     }
     else
     {
@@ -205,15 +206,15 @@ void BluezSdbusManager::connectDevices()
                 dev->setState(BleDeviceState::CONNECTING);
                 auto invoker = mMacProxyMap[dev->getMacAddr()]->callMethodAsync("Connect")
                     .onInterface(BLUEZ_DEVICE)
-                    .uponReplyInvoke([dev, this](const sdbus::Error* error){
-                        if (error)
-                        {
-                            std::cerr << "Async connect failed: " << error->getName() << " - " << error->getMessage() << std::endl;
-                        }
-                        else
-                        {
-                            std::cout << "Async connect succeeded." << std::endl;
-                        }
+                    .uponReplyInvoke([dev, this](std::optional<sdbus::Error> error){
+                    if (error.has_value())
+                    {
+                        std::cerr << "Connect failed: " << error.value().getMessage() << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "Async connect succeeded." << std::endl;
+                    }
                 });
             }
             catch (const sdbus::Error& e)
@@ -278,7 +279,7 @@ void BluezSdbusManager::sendCommand(const BleCommand& command)
         std::string devicePath = HCI0_PATH + "/dev_" + convertToBluezMac(dev->getMacAddr());
         std::string fullPath = devicePath + command.charPath;
 
-        auto charProxy = sdbus::createProxy(*mBusConnection, BLUEZ_SERVICE, fullPath);
+        auto charProxy = sdbus::createProxy(*mBusConnection, sdbus::ServiceName(BLUEZ_SERVICE), sdbus::ObjectPath(fullPath));
         try {
             std::map<std::string, sdbus::Variant> sdbusOptions;
             for(const auto& [key, value] : command.options)
