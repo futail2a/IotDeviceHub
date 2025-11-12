@@ -200,7 +200,7 @@ void IotDeviceHubManager::run()
     while(isRunning)
     {
         mBle->connectDevices();
-        sleep(5);
+        sleep(1);
     }
 }
 

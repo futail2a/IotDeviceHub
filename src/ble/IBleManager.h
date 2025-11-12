@@ -15,6 +15,7 @@ public:
     virtual bool stopScan() = 0;
     virtual void setDevice(std::shared_ptr<BleDeviceHandler> device) = 0;
     virtual void connectDevices() = 0;
+    virtual void disconnectDevices() = 0;
     virtual void sendCommand(const BleCommand& command) = 0;
 };
 
