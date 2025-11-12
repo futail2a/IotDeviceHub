@@ -7,6 +7,12 @@ bool BluezSdbusManager::init()
     {
         mBusConnection = sdbus::createSystemBusConnection();
         mBluezProxy = sdbus::createProxy(*mBusConnection, BLUEZ_SERVICE, HCI0_PATH);
+        mObjectManagerProxy = sdbus::createProxy(*mBusConnection, BLUEZ_SERVICE, "/");
+        mObjectManagerProxy->registerSignalHandler(
+            "org.freedesktop.DBus.ObjectManager",
+            "InterfacesAdded",
+            [this](sdbus::Signal& signal) { this->onInterfaceAdded(signal, this); }
+        );
         mBusConnection->enterEventLoopAsync();
     }
     catch(const std::exception& e)
@@ -143,6 +149,27 @@ void BluezSdbusManager::onPropertiesChanged(sdbus::Message& msg, BluezSdbusManag
         {
             std::cout << "No registered device found for MAC: " << mac << std::endl;
         }
+
+        auto it_sd = changedProps.find("ServiceData");
+        if (it_sd != changedProps.end())
+        {
+            try {
+                const auto& serviceDataMap = it_sd->second.get<std::map<std::string, sdbus::Variant>>();
+
+                for (const auto& [uuid, dataVariant] : serviceDataMap)
+                {
+                    const auto& data = dataVariant.get<std::vector<uint8_t>>();
+                    auto device = handler->findDeviceFromMac(convertFromBluezMac(path));
+                    if(auto dev = device.lock())
+                    {
+                        dev->onAdvPacketRecived(data);
+                        std::cout << "ServiceData updated for " << mac << ", UUID: " << uuid << std::endl;
+                    }
+                }
+            } catch (const sdbus::Error& e) {
+                std::cerr << "Error parsing ServiceData: " << e.getMessage() << std::endl;
+            }
+        }
     }
     else
     {
@@ -158,13 +185,16 @@ void BluezSdbusManager::connectDevices()
         {
             if(dev->getState() != BleDeviceState::DISCONNECTED)
             {
-                if(dev->getConnCnt() >= MAX_CONN_RETRY)
+                if(dev->getState() == BleDeviceState::CONNECTING)
                 {
-                    std::cout << "Device " << dev->getMacAddr() << " reached max connection attempts, resetting counter." << std::endl;
-                    dev->resetConnCnt();
-                    dev->setState(BleDeviceState::DISCONNECTED);
+                    dev->incrementConnCnt();
+                    if(dev->getConnCnt() >= MAX_CONN_RETRY)
+                    {
+                        std::cout << "Device " << dev->getMacAddr() << " reached max connection attempts, resetting counter." << std::endl;
+                        dev->resetConnCnt();
+                        dev->setState(BleDeviceState::DISCONNECTED);
+                    }
                 }
-                dev->incrementConnCnt();
                 continue;
             }
 
@@ -289,54 +319,36 @@ void BluezSdbusManager::sendCommand(const BleCommand& command)
     }
 };
 
-// void BluezSdbusManager::onInterfacesAdded(sdbus::Signal& signal)
-// {
-//     sdbus::ObjectPath objectPath;
-//     std::map<std::string, std::map<std::string, sdbus::Variant>> interfaces;
+void BluezSdbusManager::onInterfaceAdded(sdbus::Signal& signal, BluezSdbusManager* handler)
+{
+    sdbus::ObjectPath path;
+    std::map<std::string, std::map<std::string, sdbus::Variant>> interfaces;
+    signal >> path >> interfaces;
 
-//     signal >> objectPath >> interfaces;
+    if (path.find(HCI0_PATH + "/dev_") != 0)
+    {
+        return;
+    }
 
-//     auto it = interfaces.find("org.bluez.Device1");
-//     if (it == interfaces.end())
-//     {
-//         std::cout << "InterfacesAdded signal does not contain Device1 interface." << std::endl;
-//         return;
-//     }
+    auto it = interfaces.find(BLUEZ_DEVICE);
+    if (it != interfaces.end())
+    {
+        const auto& properties = it->second;
 
-//     const auto& props = it->second;
-//     auto addrIt = props.find("Address");
-//     if (addrIt == props.end())
-//     {
-//         std::cout << "Device1 interface does not contain Address property." << std::endl;
-//         return;
-//     }
+        auto sd_it = properties.find("ServiceData");
+        if (sd_it != properties.end())
+        {
+            const auto& serviceDataMap = sd_it->second.get<std::map<std::string, sdbus::Variant>>();
 
-//     std::string address = addrIt->second.get<std::string>();
-
-//     for(auto device : mBleDeviceHandlers)
-//     {
-//         if(auto dev = device.lock())
-//         {
-//             std::string targetMac = dev->getMacAddr();
-//             if(address == targetMac)
-//             {
-//                 // std::cout << "Found interested device: " << address << std::endl;
-//                 const auto& props = it->second;
-//                 auto advDataIt = props.find("ServiceData");
-//                 if (advDataIt != props.end())
-//                 {
-//                     const auto& variant = advDataIt->second;
-//                     const auto& serviceData = variant.get<std::map<std::string, std::vector<uint8_t>>>();
-
-//                     for (const auto& [uuid, data] : serviceData) {
-//                         dev->onAdvPacketRecived(data);
-//                     }
-//                 }
-//             }
-//         }
-//         else
-//         {
-//             continue;
-//         }
-//     }
-// };
+            for (const auto& [uuid, dataVariant] : serviceDataMap)
+            {
+                const auto& data = dataVariant.get<std::vector<uint8_t>>();
+                auto device = handler->findDeviceFromMac(convertFromBluezMac(path));
+                if(auto dev = device.lock())
+                {
+                    dev->onAdvPacketRecived(data);
+                }
+            }
+        }
+    }
+};

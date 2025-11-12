@@ -75,9 +75,10 @@ public:
     static void onPropertiesChanged(sdbus::Message& msg, BluezSdbusManager* handler);
 
 private:
-    void onInterfacesAdded(sdbus::Signal& signal);
+    void onInterfaceAdded(sdbus::Signal& signal, BluezSdbusManager* handler);
     std::unique_ptr<sdbus::IConnection> mBusConnection;
     std::unique_ptr<sdbus::IProxy> mBluezProxy;
+    std::unique_ptr<sdbus::IProxy> mObjectManagerProxy;
     std::vector<std::weak_ptr<BleDeviceHandler>> mBleDeviceHandlers;
     std::map<std::string, std::unique_ptr<sdbus::IProxy>> mMacProxyMap; // TODO: consolidate with mMacSlotMap
     std::map<std::string, sdbus::Slot> mMacSlotMap;
