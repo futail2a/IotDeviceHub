@@ -2,7 +2,11 @@ name: Build and Test
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -57,12 +61,6 @@ jobs:
       run: |
         cd build
         make coverage || true
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        files: build/coverage.info
-        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
